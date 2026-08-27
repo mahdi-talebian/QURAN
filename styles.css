@@ -63,65 +63,66 @@
 
 html[data-theme="dark"] {
   color-scheme: dark;
-  --ink: #f7faf8;
-  --muted: #9fb3aa;
-  --faint: #7d9087;
-  --soft: #16221c;
-  --line: rgba(160, 198, 180, .2);
-  --rule: rgba(160, 198, 180, .14);
-  --paper: #101a15;
-  --canvas: #0a0f0c;
-  --accent: #38c493;
-  --accent-strong: #63d3a9;
-  --accent-soft: rgba(56, 196, 147, .15);
-  --accent-border: #2f8465;
+  --ink: #f7f4ec;
+  --muted: #a49b88;
+  --faint: #857c6b;
+  --soft: #1d1a13;
+  --line: rgba(214, 194, 150, .18);
+  --rule: rgba(214, 194, 150, .12);
+  --paper: #16140f;
+  --canvas: #0e0d0a;
+  --accent: #d9b04a;
+  --accent-strong: #f0c75e;
+  --accent-soft: rgba(217, 176, 74, .14);
+  --accent-border: #8a6d2f;
   --gold: #e3b23c;
   --error: #e28282;
   --shadow: 0 18px 50px rgba(0, 0, 0, .5);
-  --focus-ring: rgba(94, 201, 148, .42);
+  --focus-ring: rgba(232, 200, 120, .45);
 
-  --header-bg: rgba(13, 20, 16, .82);
-  --header-line: rgba(160, 198, 180, .13);
-  --canvas-glow-1: rgba(43, 122, 88, .17);
-  --canvas-glow-2: rgba(128, 102, 46, .12);
+  --header-bg: rgba(20, 18, 13, .84);
+  --header-line: rgba(214, 194, 150, .13);
+  --canvas-glow-1: rgba(217, 176, 74, .1);
+  --canvas-glow-2: rgba(178, 132, 60, .08);
 
-  --surface: rgba(18, 28, 23, .88);
-  --surface-line: rgba(160, 198, 180, .17);
-  --raised: rgba(24, 36, 30, .92);
-  --raised-hover: #1c2b23;
-  --raised-hover-line: #3f8f6f;
-  --field: #131e18;
-  --card-bg: rgba(19, 29, 24, .95);
-  --card-line: rgba(160, 198, 180, .18);
-  --spinner-track: rgba(160, 198, 180, .22);
+  --surface: rgba(26, 23, 17, .9);
+  --surface-line: rgba(214, 194, 150, .16);
+  --raised: rgba(33, 29, 21, .92);
+  --raised-hover: #262217;
+  --raised-hover-line: #9c7f3a;
+  --field: #191611;
+  --card-bg: rgba(24, 21, 16, .96);
+  --card-line: rgba(214, 194, 150, .17);
+  --spinner-track: rgba(214, 194, 150, .22);
 
-  --grid-border: rgba(160, 198, 180, .17);
-  --grid-line-1: rgba(120, 200, 160, .05);
-  --grid-line-2: rgba(120, 200, 160, .04);
-  --frame-border: rgba(96, 200, 148, .32);
-  --frame-glow: rgba(96, 200, 148, .09);
-  --frame-ornament: rgba(110, 202, 152, .42);
+  --grid-border: rgba(214, 194, 150, .16);
+  --grid-line-1: rgba(217, 190, 120, .05);
+  --grid-line-2: rgba(217, 190, 120, .04);
+  --frame-border: rgba(217, 176, 74, .34);
+  --frame-glow: rgba(217, 176, 74, .1);
+  --frame-ornament: rgba(222, 190, 110, .5);
 
-  --cell-line: rgba(160, 198, 180, .15);
-  --cell: #15211a;
-  --status-bg: rgba(56, 196, 147, .11);
-  --status-ink: #8fdcb8;
-  --status-check: #2fa277;
+  --cell-line: rgba(214, 194, 150, .14);
+  --cell: #1e1a13;
+  --status-bg: rgba(217, 176, 74, .12);
+  --status-ink: #e2c979;
+  --status-check: #b98e2e;
   --status-warn-bg: rgba(227, 178, 60, .12);
   --status-warn-ink: #e5c473;
   --status-warn-check: #c08a2e;
-  --dot-idle: #46584f;
-  --link-line: rgba(94, 201, 148, .4);
-  --chip-bg: #14201a;
-  --chip-active-ink: #06231a;
+  --dot-idle: #565043;
+  --dot-success: #d9b04a;
+  --link-line: rgba(217, 176, 74, .45);
+  --chip-bg: #1a1712;
+  --chip-active-ink: #241a04;
 
-  /* Dark theme: white Quran text, gold hover. */
+  /* Dark theme: white Quran text, gold hover, copper for the same verse. */
   --quran-ink: #f8f6ef;
   --selected-ink: #f8f6ef;
   --word-hover: #e8b64c;
   --word-active: #f0c356;
-  --word-same-verse: #46c78f;
-  --touch-target-stroke: rgba(96, 200, 148, .5);
+  --word-same-verse: #cf8437;
+  --touch-target-stroke: rgba(217, 176, 74, .5);
 }
 
 * { box-sizing: border-box; }
@@ -186,6 +187,12 @@ body, .app-header, .inspector, .mushaf-stage, .loading-card, .error-card,
 .brand strong { display: block; font-size: 16px; line-height: 1.2; }
 .brand small { display: block; color: var(--muted); font-size: 11px; margin-top: 3px; }
 
+/* Gold brand emblem in the dark theme — no green left there. */
+html[data-theme="dark"] .brand-mark {
+  background: linear-gradient(145deg, #e0b54e, #8a6414);
+  box-shadow: 0 8px 17px rgba(0, 0, 0, .4);
+}
+
 .header-side {
   display: inline-flex;
   align-items: center;
@@ -208,7 +215,7 @@ body, .app-header, .inspector, .mushaf-stage, .loading-card, .error-card,
   background: var(--dot-idle);
 }
 .connection-state.loading .state-dot { background: var(--gold); animation: glow 1.15s ease-in-out infinite; }
-.connection-state.success .state-dot { background: #21a069; }
+.connection-state.success .state-dot { background: var(--dot-success); }
 .connection-state.error .state-dot { background: var(--error); }
 
 /* Light/dark theme toggle. */
