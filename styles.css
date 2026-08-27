@@ -368,3 +368,10 @@ h1 { margin: 0; font-size: 19px; }
   .mushaf-stage { min-height: 540px; }
   .inspector { padding: 18px; }
 }
+
+/* --- QUL 91 Persian word-by-word translation --- */
+.translation-label { margin: 14px 0 5px; color: var(--muted); font-size: 11px; }
+.word-translation { margin: 0; color: var(--accent-strong); font-size: 20px; font-weight: 800; line-height: 1.7; }
+.verse-wbw { display: flex; flex-wrap: wrap; gap: 5px; margin: 2px 0 0; padding: 9px; border: 1px solid var(--line); border-radius: 10px; background: var(--soft); }
+.wbw-chip { padding: 2px 8px; background: var(--paper); border: 1px solid var(--line); border-radius: 999px; font-size: 12px; color: var(--ink); }
+.wbw-chip.is-active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }

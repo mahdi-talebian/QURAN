@@ -41,9 +41,15 @@ const state = {
   qcfPage: null,
   words: [],
   selectedKey: null,
+  selectedWord: null,
+  translations: null,
   sourceOrigins: { svg: ASSET_MODE === "remote" ? "remote" : "local", qcf: ASSET_MODE === "remote" ? "remote" : "local" },
   requestNumber: 0,
 };
+
+// QUL resource 91 — Persian word-by-word translation, keyed "surah:ayah:word".
+const WORD_TRANSLATIONS_URL = new URL("./assets/translations/qul-91-persian-wbw.json", import.meta.url).href;
+
 
 const ui = {
   pageHost: document.querySelector("#mushaf-page"),
@@ -65,6 +71,8 @@ const ui = {
   lineNumber: document.querySelector("#line-number"),
   wordPosition: document.querySelector("#word-position"),
   svgId: document.querySelector("#svg-id"),
+  wordTranslation: document.querySelector("#word-translation"),
+  verseWbw: document.querySelector("#verse-wbw"),
   qcfStatus: document.querySelector("#qcf-status"),
   svgSource: document.querySelector("#svg-source"),
   qcfSource: document.querySelector("#qcf-source"),
@@ -289,11 +297,54 @@ function installTouchHitAreas(svgRoot) {
 
 function clearSelection() {
   state.selectedKey = null;
+  state.selectedWord = null;
   state.words.forEach((word) => word.classList.remove("is-active-word", "is-same-verse"));
   ui.resetSelection.disabled = true;
   ui.details.hidden = true;
   ui.empty.hidden = false;
 }
+
+/* --- QUL 91: Persian word-by-word translation (single lazy fetch) --- */
+function loadWordTranslations() {
+  return fetch(WORD_TRANSLATIONS_URL, { cache: "force-cache" })
+    .then((response) => {
+      if (!response.ok) throw new Error(`Translation request failed: ${response.status}`);
+      return response.json();
+    })
+    .then((data) => {
+      state.translations = data;
+      if (state.selectedWord) selectWord(state.selectedWord);
+    })
+    .catch((error) => {
+      state.translations = {};
+      console.warn("QUL 91 translations unavailable:", error);
+    });
+}
+
+function wordTranslation(verseKey, position) {
+  if (!state.translations) return "در حال بارگذاریٔ ترجمه…";
+  return state.translations[`${verseKey}:${position}`] || "—";
+}
+
+function renderVerseTranslations(verseKey, activePosition) {
+  if (!state.translations) return;
+  const prefix = `${verseKey}:`;
+  const chips = Object.entries(state.translations)
+    .filter(([key, value]) => key.startsWith(prefix) && Number.isInteger(toInteger(key.slice(prefix.length))) && !/^\d+$/.test(value.trim()))
+    .map(([key, value]) => ({ position: toInteger(key.slice(prefix.length)), value }))
+    .sort((a, b) => a.position - b.position)
+    .map(({ position, value }) => {
+      const chip = document.createElement("span");
+      chip.className = "wbw-chip";
+      if (position === activePosition) chip.classList.add("is-active");
+      chip.textContent = value;
+      return chip;
+    });
+
+  ui.verseWbw.replaceChildren(...chips);
+  ui.verseWbw.hidden = chips.length === 0;
+}
+
 
 function selectWord(word) {
   const interactionKey = word.dataset.interactionKey || word.id;
@@ -309,9 +360,14 @@ function selectWord(word) {
 
   const [surah, ayah] = verseKey.split(":");
   const qcfText = word.dataset.qcfText || word.dataset.hafs || "—";
+  const position = toInteger(word.dataset.qcfPosition || word.dataset.wordIndexInAyah);
+
+  state.selectedWord = word;
 
   ui.selectedWord.textContent = qcfText;
   ui.plainWord.textContent = word.dataset.imlaey || "";
+  ui.wordTranslation.textContent = wordTranslation(verseKey, position);
+  renderVerseTranslations(verseKey, position);
   ui.verseKey.textContent = `${surah}:${ayah}`;
   ui.lineNumber.textContent = asPersianNumber(toInteger(word.dataset.lineNumber));
   ui.wordPosition.textContent = asPersianNumber(word.dataset.qcfPosition || word.dataset.wordIndexInAyah || "—");
@@ -453,4 +509,5 @@ ui.pageHost.addEventListener("pointerup", (event) => {
   if (word && ui.pageHost.contains(word)) selectWord(word);
 });
 
+loadWordTranslations();
 loadPage(state.page);
