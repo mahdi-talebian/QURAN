@@ -1,16 +1,127 @@
 :root {
+  color-scheme: light;
   --ink: #18352e;
   --muted: #61756d;
+  --faint: #87968f;
   --soft: #ecf2ee;
   --line: #dbe7df;
+  --rule: #e4ece7;
   --paper: #fffefa;
   --canvas: #f5f8f5;
   --accent: #0d7354;
   --accent-strong: #07573f;
   --accent-soft: #d9f1e4;
+  --accent-border: #82b89e;
   --gold: #b57f19;
   --error: #a73d3d;
   --shadow: 0 18px 50px rgba(18, 57, 44, 0.11);
+  --focus-ring: rgba(13, 115, 84, .34);
+
+  --header-bg: rgba(255, 255, 252, .78);
+  --header-line: rgba(111, 145, 127, .16);
+  --canvas-glow-1: rgba(184, 226, 199, .5);
+  --canvas-glow-2: rgba(229, 211, 164, .24);
+
+  --surface: rgba(255, 255, 253, .82);
+  --surface-line: rgba(209, 223, 214, .9);
+  --raised: rgba(255, 255, 253, .88);
+  --raised-hover: #fff;
+  --raised-hover-line: #9fc6b1;
+  --field: #fff;
+  --card-bg: rgba(255, 255, 252, .93);
+  --card-line: #dbe8de;
+  --spinner-track: #cdded4;
+
+  --grid-border: #d9e3dc;
+  --grid-line-1: rgba(66, 137, 94, .035);
+  --grid-line-2: rgba(66, 137, 94, .028);
+  --frame-border: rgba(103, 199, 124, .42);
+  --frame-glow: rgba(150, 225, 163, .14);
+  --frame-ornament: rgba(72, 164, 91, .48);
+
+  --cell-line: #e3ebe6;
+  --cell: #fcfdfb;
+  --status-bg: #edf8f1;
+  --status-ink: #23674e;
+  --status-check: #318b67;
+  --status-warn-bg: #fdf5e5;
+  --status-warn-ink: #976214;
+  --status-warn-check: #ae7319;
+  --dot-idle: #a8b8ae;
+  --link-line: #abd5bd;
+  --chip-bg: var(--paper);
+  --chip-active-ink: #fff;
+
+  /* Quran artwork — the SVG has no fill attributes, CSS owns the tint. */
+  --quran-ink: #000;
+  --selected-ink: #122f27;
+  --word-hover: var(--accent);
+  --word-active: #b1780e;
+  --word-same-verse: #2e8c68;
+  --touch-target-stroke: rgba(29, 131, 92, .45);
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --ink: #f7faf8;
+  --muted: #9fb3aa;
+  --faint: #7d9087;
+  --soft: #16221c;
+  --line: rgba(160, 198, 180, .2);
+  --rule: rgba(160, 198, 180, .14);
+  --paper: #101a15;
+  --canvas: #0a0f0c;
+  --accent: #38c493;
+  --accent-strong: #63d3a9;
+  --accent-soft: rgba(56, 196, 147, .15);
+  --accent-border: #2f8465;
+  --gold: #e3b23c;
+  --error: #e28282;
+  --shadow: 0 18px 50px rgba(0, 0, 0, .5);
+  --focus-ring: rgba(94, 201, 148, .42);
+
+  --header-bg: rgba(13, 20, 16, .82);
+  --header-line: rgba(160, 198, 180, .13);
+  --canvas-glow-1: rgba(43, 122, 88, .17);
+  --canvas-glow-2: rgba(128, 102, 46, .12);
+
+  --surface: rgba(18, 28, 23, .88);
+  --surface-line: rgba(160, 198, 180, .17);
+  --raised: rgba(24, 36, 30, .92);
+  --raised-hover: #1c2b23;
+  --raised-hover-line: #3f8f6f;
+  --field: #131e18;
+  --card-bg: rgba(19, 29, 24, .95);
+  --card-line: rgba(160, 198, 180, .18);
+  --spinner-track: rgba(160, 198, 180, .22);
+
+  --grid-border: rgba(160, 198, 180, .17);
+  --grid-line-1: rgba(120, 200, 160, .05);
+  --grid-line-2: rgba(120, 200, 160, .04);
+  --frame-border: rgba(96, 200, 148, .32);
+  --frame-glow: rgba(96, 200, 148, .09);
+  --frame-ornament: rgba(110, 202, 152, .42);
+
+  --cell-line: rgba(160, 198, 180, .15);
+  --cell: #15211a;
+  --status-bg: rgba(56, 196, 147, .11);
+  --status-ink: #8fdcb8;
+  --status-check: #2fa277;
+  --status-warn-bg: rgba(227, 178, 60, .12);
+  --status-warn-ink: #e5c473;
+  --status-warn-check: #c08a2e;
+  --dot-idle: #46584f;
+  --link-line: rgba(94, 201, 148, .4);
+  --chip-bg: #14201a;
+  --chip-active-ink: #06231a;
+
+  /* Dark theme: white Quran text, gold hover. */
+  --quran-ink: #f8f6ef;
+  --selected-ink: #f8f6ef;
+  --word-hover: #e8b64c;
+  --word-active: #f0c356;
+  --word-same-verse: #46c78f;
+  --touch-target-stroke: rgba(96, 200, 148, .5);
 }
 
 * { box-sizing: border-box; }
@@ -20,8 +131,8 @@ body {
   min-width: 320px;
   color: var(--ink);
   background:
-    radial-gradient(circle at 4% 7%, rgba(184, 226, 199, .5), transparent 23rem),
-    radial-gradient(circle at 98% 96%, rgba(229, 211, 164, .24), transparent 28rem),
+    radial-gradient(circle at 4% 7%, var(--canvas-glow-1), transparent 23rem),
+    radial-gradient(circle at 98% 96%, var(--canvas-glow-2), transparent 28rem),
     var(--canvas);
   font-family: Vazirmatn, Tahoma, Arial, sans-serif;
 }
@@ -29,8 +140,14 @@ body {
 button, input { font: inherit; }
 button { cursor: pointer; }
 button:focus-visible, input:focus-visible, a:focus-visible {
-  outline: 3px solid rgba(13, 115, 84, .34);
+  outline: 3px solid var(--focus-ring);
   outline-offset: 3px;
+}
+
+/* Smooth light ⇄ dark theme switch. */
+body, .app-header, .inspector, .mushaf-stage, .loading-card, .error-card,
+.page-input-wrap input, .detail-grid, .detail-grid div, .wbw-chip, .data-status {
+  transition: background-color .3s ease, color .3s ease, border-color .3s ease, box-shadow .3s ease;
 }
 
 .app-header {
@@ -40,8 +157,8 @@ button:focus-visible, input:focus-visible, a:focus-visible {
   justify-content: space-between;
   gap: 18px;
   padding: 0 clamp(18px, 4vw, 56px);
-  border-bottom: 1px solid rgba(111, 145, 127, .16);
-  background: rgba(255, 255, 252, .78);
+  border-bottom: 1px solid var(--header-line);
+  background: var(--header-bg);
   backdrop-filter: blur(12px);
 }
 
@@ -69,6 +186,12 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 .brand strong { display: block; font-size: 16px; line-height: 1.2; }
 .brand small { display: block; color: var(--muted); font-size: 11px; margin-top: 3px; }
 
+.header-side {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .connection-state {
   display: inline-flex;
   align-items: center;
@@ -82,11 +205,31 @@ button:focus-visible, input:focus-visible, a:focus-visible {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #a8b8ae;
+  background: var(--dot-idle);
 }
 .connection-state.loading .state-dot { background: var(--gold); animation: glow 1.15s ease-in-out infinite; }
 .connection-state.success .state-dot { background: #21a069; }
 .connection-state.error .state-dot { background: var(--error); }
+
+/* Light/dark theme toggle. */
+.theme-toggle {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--raised);
+  transition: background-color .2s, border-color .2s, color .2s, transform .3s ease;
+}
+.theme-toggle:hover { border-color: var(--raised-hover-line); background: var(--raised-hover); transform: rotate(14deg); }
+.theme-icon { line-height: 1; }
+.theme-icon-sun { display: none; }
+html[data-theme="dark"] .theme-icon-sun { display: block; }
+html[data-theme="dark"] .theme-icon-moon { display: none; }
 
 .app-layout {
   display: grid;
@@ -114,12 +257,15 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 
 .icon-button, .subtle-button, .retry-button {
   border: 1px solid var(--line);
-  background: rgba(255, 255, 253, .88);
+  background: var(--raised);
   color: var(--ink);
   border-radius: 9px;
-  transition: background .2s, border-color .2s, transform .2s;
+  transition: background-color .2s, border-color .2s, transform .2s, color .2s;
 }
-.icon-button:hover, .subtle-button:hover, .retry-button:hover { border-color: #9fc6b1; background: #fff; }
+.icon-button:hover, .subtle-button:hover, .retry-button:hover {
+  border-color: var(--raised-hover-line);
+  background: var(--raised-hover);
+}
 .icon-button:active, .subtle-button:active { transform: translateY(1px); }
 
 .icon-button {
@@ -132,8 +278,8 @@ button:focus-visible, input:focus-visible, a:focus-visible {
   line-height: 1;
 }
 .subtle-button { padding: 7px 10px; font-size: 12px; }
-.subtle-button[aria-pressed="true"] { color: var(--accent-strong); border-color: #82b89e; background: var(--accent-soft); }
-.subtle-button:disabled { cursor: default; color: #a4b2ab; border-color: #e3e9e5; background: #f7f9f8; }
+.subtle-button[aria-pressed="true"] { color: var(--accent-strong); border-color: var(--accent-border); background: var(--accent-soft); }
+.subtle-button:disabled { cursor: default; color: var(--faint); border-color: var(--rule); background: transparent; }
 
 .page-input-wrap {
   display: inline-flex;
@@ -152,9 +298,9 @@ button:focus-visible, input:focus-visible, a:focus-visible {
   color: var(--ink);
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fff;
+  background: var(--field);
 }
-.page-total { color: #87968f; }
+.page-total { color: var(--faint); }
 
 .mushaf-stage {
   position: relative;
@@ -164,12 +310,12 @@ button:focus-visible, input:focus-visible, a:focus-visible {
   margin: 0 auto;
   place-items: center;
   overflow: hidden;
-  border: 1px solid #d9e3dc;
+  border: 1px solid var(--grid-border);
   border-radius: 5px;
   background-color: var(--paper);
   background-image:
-    linear-gradient(90deg, rgba(66, 137, 94, .035) 1px, transparent 1px),
-    linear-gradient(rgba(66, 137, 94, .028) 1px, transparent 1px);
+    linear-gradient(90deg, var(--grid-line-1) 1px, transparent 1px),
+    linear-gradient(var(--grid-line-2) 1px, transparent 1px);
   background-size: 18px 18px;
   box-shadow: var(--shadow);
 }
@@ -181,8 +327,8 @@ button:focus-visible, input:focus-visible, a:focus-visible {
   inset: 9px;
   z-index: 1;
   pointer-events: none;
-  border: 2px solid rgba(103, 199, 124, .42);
-  box-shadow: inset 0 0 0 3px rgba(150, 225, 163, .14);
+  border: 2px solid var(--frame-border);
+  box-shadow: inset 0 0 0 3px var(--frame-glow);
 }
 .mushaf-stage::after {
   content: "✦  ۞  ✦";
@@ -192,7 +338,7 @@ button:focus-visible, input:focus-visible, a:focus-visible {
   bottom: 10px;
   pointer-events: none;
   direction: ltr;
-  color: rgba(72, 164, 91, .48);
+  color: var(--frame-ornament);
   font-family: Georgia, serif;
   font-size: 12px;
   letter-spacing: 4px;
@@ -214,11 +360,25 @@ button:focus-visible, input:focus-visible, a:focus-visible {
   -webkit-user-select: none;
 }
 
-/* SVG is the authoritative visual layer. These classes only change state. */
-.mushaf-page [id^="md-word-"] { cursor: pointer; }
-.mushaf-page [id^="md-word-"].is-active-word path { fill: #b1780e !important; }
-.mushaf-page [id^="md-word-"].is-same-verse path { fill: #2e8c68 !important; }
-.mushaf-page.show-touch-targets [id^="md-word-"] path { stroke: rgba(29, 131, 92, .45); stroke-width: .28px; }
+/*
+ * SVG is the authoritative visual layer: its paths ship without fill
+ * attributes, so the tint below is themeable and animatable.
+ */
+.mushaf-page svg path {
+  fill: var(--quran-ink);
+  transition: fill .22s ease;
+}
+
+.mushaf-page [id^="md-word-"] { cursor: pointer; transition: filter .25s ease; }
+.mushaf-page [id^="md-word-"].is-active-word path { fill: var(--word-active) !important; }
+.mushaf-page [id^="md-word-"].is-same-verse path { fill: var(--word-same-verse) !important; }
+.mushaf-page.show-touch-targets [id^="md-word-"] path { stroke: var(--touch-target-stroke); stroke-width: .28px; }
+
+/* Hover animation: every word tints smoothly — golden in the dark theme. */
+.mushaf-page [id^="md-word-"]:hover path { fill: var(--word-hover) !important; }
+html[data-theme="dark"] .mushaf-page [id^="md-word-"]:hover {
+  filter: drop-shadow(0 0 6px rgba(232, 182, 76, .45));
+}
 
 .loading-card, .error-card {
   z-index: 5;
@@ -229,9 +389,9 @@ button:focus-visible, input:focus-visible, a:focus-visible {
   padding: 17px 20px;
   color: var(--muted);
   font-size: 13px;
-  border: 1px solid #dbe8de;
+  border: 1px solid var(--card-line);
   border-radius: 12px;
-  background: rgba(255, 255, 252, .93);
+  background: var(--card-bg);
   box-shadow: 0 9px 30px rgba(26, 74, 55, .12);
 }
 .loading-card[hidden] { display: none; }
@@ -242,7 +402,7 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 .spinner {
   width: 18px;
   height: 18px;
-  border: 2px solid #cdded4;
+  border: 2px solid var(--spinner-track);
   border-top-color: var(--accent);
   border-radius: 50%;
   animation: spin .8s linear infinite;
@@ -262,9 +422,9 @@ button:focus-visible, input:focus-visible, a:focus-visible {
   top: 18px;
   min-height: 480px;
   padding: 22px;
-  border: 1px solid rgba(209, 223, 214, .9);
+  border: 1px solid var(--surface-line);
   border-radius: 16px;
-  background: rgba(255, 255, 253, .82);
+  background: var(--surface);
   box-shadow: 0 12px 35px rgba(27, 69, 54, .06);
 }
 .inspector-head { display: flex; align-items: start; justify-content: space-between; gap: 12px; }
@@ -291,7 +451,7 @@ h1 { margin: 0; font-size: 19px; }
 .selected-label { margin: 0; color: var(--muted); font-size: 11px; }
 .selected-word {
   margin: 7px 0 3px;
-  color: #122f27;
+  color: var(--selected-ink);
   font-family: "Times New Roman", serif;
   font-size: clamp(30px, 3.6vw, 43px);
   line-height: 1.35;
@@ -304,11 +464,11 @@ h1 { margin: 0; font-size: 19px; }
   gap: 1px;
   margin: 0;
   overflow: hidden;
-  border: 1px solid #e3ebe6;
+  border: 1px solid var(--cell-line);
   border-radius: 10px;
-  background: #e3ebe6;
+  background: var(--cell-line);
 }
-.detail-grid div { padding: 10px 9px; background: #fcfdfb; }
+.detail-grid div { padding: 10px 9px; background: var(--cell); }
 .detail-grid dt { margin-bottom: 4px; color: var(--muted); font-size: 10px; }
 .detail-grid dd { margin: 0; color: var(--ink); font-size: 13px; font-weight: 600; direction: ltr; text-align: right; }
 .detail-grid .code { font-size: 10px; font-weight: 500; }
@@ -319,12 +479,12 @@ h1 { margin: 0; font-size: 19px; }
   gap: 8px;
   margin-top: 14px;
   padding: 9px 10px;
-  color: #23674e;
+  color: var(--status-ink);
   font-size: 11px;
   border-radius: 8px;
-  background: #edf8f1;
+  background: var(--status-bg);
 }
-.data-status.is-warning { color: #976214; background: #fdf5e5; }
+.data-status.is-warning { color: var(--status-warn-ink); background: var(--status-warn-bg); }
 .status-check {
   display: grid;
   width: 17px;
@@ -335,24 +495,31 @@ h1 { margin: 0; font-size: 19px; }
   font-size: 11px;
   font-weight: 700;
   border-radius: 50%;
-  background: #318b67;
+  background: var(--status-check);
 }
-.data-status.is-warning .status-check { background: #ae7319; }
+.data-status.is-warning .status-check { background: var(--status-warn-check); }
 
 .architecture-card, .source-card {
   margin-top: 24px;
   padding-top: 18px;
-  border-top: 1px solid #e4ece7;
+  border-top: 1px solid var(--rule);
 }
 .architecture-card ul { margin: 8px 0 0; padding: 0 18px 0 0; color: var(--muted); font-size: 11px; line-height: 2.1; }
 .architecture-card strong { color: var(--ink); }
 .source-card { display: grid; gap: 8px; }
 .source-card p { margin: 0 0 2px; color: var(--muted); font-size: 11px; }
-.source-card a { width: fit-content; color: var(--accent-strong); font-size: 12px; text-decoration: none; border-bottom: 1px solid #abd5bd; }
+.source-card a { width: fit-content; color: var(--accent-strong); font-size: 12px; text-decoration: none; border-bottom: 1px solid var(--link-line); }
 .source-card a:hover { color: var(--accent); }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes glow { 50% { opacity: .35; transform: scale(.8); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .mushaf-page svg path,
+  .mushaf-page [id^="md-word-"] { transition: none; }
+  html[data-theme="dark"] .mushaf-page [id^="md-word-"]:hover { filter: none; }
+  .theme-toggle:hover { transform: none; }
+}
 
 @media (max-width: 880px) {
   .app-layout { grid-template-columns: 1fr; max-width: 720px; }
@@ -373,5 +540,14 @@ h1 { margin: 0; font-size: 19px; }
 .translation-label { margin: 14px 0 5px; color: var(--muted); font-size: 11px; }
 .word-translation { margin: 0; color: var(--accent-strong); font-size: 20px; font-weight: 800; line-height: 1.7; }
 .verse-wbw { display: flex; flex-wrap: wrap; gap: 5px; margin: 2px 0 0; padding: 9px; border: 1px solid var(--line); border-radius: 10px; background: var(--soft); }
-.wbw-chip { padding: 2px 8px; background: var(--paper); border: 1px solid var(--line); border-radius: 999px; font-size: 12px; color: var(--ink); }
-.wbw-chip.is-active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
+.wbw-chip {
+  padding: 2px 8px;
+  background: var(--chip-bg);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--ink);
+  transition: color .2s ease, border-color .2s ease;
+}
+.wbw-chip:hover { color: var(--gold); border-color: var(--gold); }
+.wbw-chip.is-active { background: var(--accent); border-color: var(--accent); color: var(--chip-active-ink); font-weight: 700; }
