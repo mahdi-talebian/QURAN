@@ -1,0 +1,5 @@
+# Replace quran.example.com with your actual domain.
+# Caddy obtains and renews HTTPS certificates automatically when DNS points here.
+quran.example.com {
+    reverse_proxy 127.0.0.1:8080
+}

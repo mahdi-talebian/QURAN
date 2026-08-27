@@ -1,0 +1,16 @@
+{
+  "name": "mushaf-touch",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Self-hosted interactive Madinah Mushaf SVG reader",
+  "scripts": {
+    "serve": "python3 -m http.server 4173 --bind 0.0.0.0",
+    "verify": "python3 scripts/verify-vendored-assets.py",
+    "extract-assets": "bash scripts/extract-local-assets.sh",
+    "build": "bash scripts/build-static.sh site",
+    "clean-assets": "bash scripts/remove-extracted-assets.sh"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

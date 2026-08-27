@@ -1,0 +1,8 @@
+services:
+  mushaf-touch:
+    build: .
+    ports:
+      # Secure default: only the reverse proxy on this server can reach the app.
+      # For a temporary public test, run with MUSHAF_BIND_ADDRESS=0.0.0.0.
+      - "${MUSHAF_BIND_ADDRESS:-127.0.0.1}:8080:8080"
+    restart: unless-stopped

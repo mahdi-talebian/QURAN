@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0c6b4f" />
+    <title>مصحف لمسی | SVG عثمانی</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <a class="brand" href="#" aria-label="صفحهٔ نخست مصحف لمسی">
+        <span class="brand-mark" aria-hidden="true">۝</span>
+        <span>
+          <strong>مصحف لمسی</strong>
+          <small>مصحف مدینه · SVG تعاملی</small>
+        </span>
+      </a>
+
+      <div class="connection-state" id="connection-state" role="status" aria-live="polite">
+        <span class="state-dot"></span>
+        <span>آمادهٔ بارگذاری</span>
+      </div>
+    </header>
+
+    <main class="app-layout">
+      <section class="reader" aria-label="نمایش صفحهٔ مصحف">
+        <div class="reader-toolbar">
+          <div class="page-nav" aria-label="جابجایی بین صفحات">
+            <button class="icon-button" id="next-page" type="button" title="صفحهٔ بعد" aria-label="صفحهٔ بعد">
+              <span aria-hidden="true">‹</span>
+            </button>
+
+            <label class="page-input-wrap" for="page-number">
+              <span>صفحه</span>
+              <input id="page-number" inputmode="numeric" min="1" max="604" value="351" />
+              <span class="page-total">از ۶۰۴</span>
+            </label>
+
+            <button class="icon-button" id="previous-page" type="button" title="صفحهٔ قبل" aria-label="صفحهٔ قبل">
+              <span aria-hidden="true">›</span>
+            </button>
+          </div>
+
+          <div class="toolbar-actions">
+            <button class="subtle-button" id="toggle-targets" type="button" aria-pressed="false">
+              محدودهٔ لمس
+            </button>
+            <button class="subtle-button" id="reset-selection" type="button" disabled>
+              پاک‌کردن انتخاب
+            </button>
+          </div>
+        </div>
+
+        <div class="mushaf-stage" id="mushaf-stage">
+          <div class="loading-card" id="loading-card" role="status">
+            <span class="spinner" aria-hidden="true"></span>
+            <span>در حال دریافت صفحهٔ مصحف…</span>
+          </div>
+          <div class="mushaf-page" id="mushaf-page" aria-live="polite"></div>
+        </div>
+
+        <p class="reader-note">
+          روی هر کلمه لمس یا کلیک کنید. ظاهر صفحه از SVG و اطلاعات تعاملی از داده‌های QCF4 خوانده می‌شود.
+        </p>
+      </section>
+
+      <aside class="inspector" aria-label="جزئیات کلمهٔ انتخاب‌شده">
+        <div class="inspector-head">
+          <div>
+            <p class="eyebrow">لایهٔ تعاملی</p>
+            <h1>کلمهٔ انتخاب‌شده</h1>
+          </div>
+          <span class="page-badge" id="page-badge">۳۵۱</span>
+        </div>
+
+        <section class="empty-state" id="empty-state">
+          <div class="empty-icon" aria-hidden="true">☝</div>
+          <h2>یک کلمه را انتخاب کنید</h2>
+          <p>
+            هر گروهِ کلمه در SVG دارای شناسه، سوره، آیه، خط و متن عثمانی است؛ انتخاب شما بدون تغییر ظاهر چاپی صفحه انجام می‌شود.
+          </p>
+        </section>
+
+        <section class="word-details" id="word-details" hidden>
+          <p class="selected-label">متن عثمانی</p>
+          <p class="selected-word" id="selected-word" dir="rtl"></p>
+          <p class="plain-word" id="plain-word" dir="rtl"></p>
+
+          <dl class="detail-grid">
+            <div>
+              <dt>نشانی آیه</dt>
+              <dd id="verse-key">—</dd>
+            </div>
+            <div>
+              <dt>خط در صفحه</dt>
+              <dd id="line-number">—</dd>
+            </div>
+            <div>
+              <dt>شمارهٔ کلمه</dt>
+              <dd id="word-position">—</dd>
+            </div>
+            <div>
+              <dt>شناسهٔ SVG</dt>
+              <dd class="code" id="svg-id">—</dd>
+            </div>
+          </dl>
+
+          <div class="data-status" id="qcf-status">
+            <span class="status-check">✓</span>
+            <span>به دادهٔ QCF4 متصل شد</span>
+          </div>
+        </section>
+
+        <section class="architecture-card">
+          <p class="eyebrow">معماری فعلی</p>
+          <ul>
+            <li><strong>SVG:</strong> نمایش چاپی و hit area هر کلمه</li>
+            <li><strong>QCF4:</strong> آیه، کلمه و دادهٔ قابل اتصال</li>
+            <li><strong>کلید اصلی:</strong> سوره : آیه : کلمه</li>
+          </ul>
+        </section>
+
+        <section class="source-card">
+          <p>منابع صفحهٔ فعلی</p>
+          <a id="svg-source" target="_blank" rel="noreferrer">مشاهدهٔ SVG</a>
+          <a id="qcf-source" target="_blank" rel="noreferrer">مشاهدهٔ JSON QCF4</a>
+        </section>
+      </aside>
+    </main>
+
+    <template id="error-template">
+      <div class="error-card" role="alert">
+        <strong>بارگذاری صفحه انجام نشد</strong>
+        <p>اتصال اینترنت یا دسترسی به GitHub را بررسی کنید و دوباره تلاش کنید.</p>
+        <button type="button" class="retry-button">تلاش دوباره</button>
+      </div>
+    </template>
+
+    <script src="./asset-mode.js"></script>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
