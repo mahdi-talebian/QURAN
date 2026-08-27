@@ -40,6 +40,7 @@ const state = {
   svg: null,
   qcfPage: null,
   words: [],
+  ayaMarks: [],
   selectedKey: null,
   selectedWord: null,
   translations: null,
@@ -265,13 +266,27 @@ function enrichSvgWords(svgRoot, qcfPage) {
   });
 
   state.words = svgWords;
+  attachAyaMarks(svgRoot);
   return { totalMatched, totalLogicalWords, qcfAvailable: qcfByVerse.size > 0 };
+}
+
+/*
+ * Aya marks (۝) carry data-surah/data-aya, so each mark knows its verse.
+ * They act as a "select the whole verse" control.
+ */
+function attachAyaMarks(svgRoot) {
+  state.ayaMarks = Array.from(svgRoot.querySelectorAll('g[id^="md-aya-mark"]'));
+  state.ayaMarks.forEach((mark) => {
+    if (mark.dataset.surah && mark.dataset.aya) {
+      mark.dataset.verseKey = verseKeyFromSvgWord(mark);
+    }
+  });
 }
 
 function installTouchHitAreas(svgRoot) {
   // A transparent rectangle enlarges tiny diacritics/short words for finger taps.
   requestAnimationFrame(() => {
-    svgRoot.querySelectorAll('g[id^="md-word-"]').forEach((word) => {
+    svgRoot.querySelectorAll('g[id^="md-word-"], g[id^="md-aya-mark"]').forEach((word) => {
       if (word.querySelector(":scope > .touch-hitbox")) return;
 
       try {
@@ -298,7 +313,8 @@ function installTouchHitAreas(svgRoot) {
 function clearSelection() {
   state.selectedKey = null;
   state.selectedWord = null;
-  state.words.forEach((word) => word.classList.remove("is-active-word", "is-same-verse"));
+  state.words.forEach((word) => word.classList.remove("is-active-word", "is-active-verse"));
+  state.ayaMarks.forEach((mark) => mark.classList.remove("is-active-mark"));
   ui.resetSelection.disabled = true;
   ui.details.hidden = true;
   ui.empty.hidden = false;
@@ -313,7 +329,7 @@ function loadWordTranslations() {
     })
     .then((data) => {
       state.translations = data;
-      if (state.selectedWord) selectWord(state.selectedWord);
+      if (state.selectedWord) selectWord(state.selectedWord, { keepVerseHighlight: true });
     })
     .catch((error) => {
       state.translations = {};
@@ -346,15 +362,18 @@ function renderVerseTranslations(verseKey, activePosition) {
 }
 
 
-function selectWord(word) {
+function selectWord(word, { keepVerseHighlight = false } = {}) {
   const interactionKey = word.dataset.interactionKey || word.id;
   const verseKey = word.dataset.verseKey || verseKeyFromSvgWord(word);
   const qcfMatched = word.dataset.qcfMatched === "true";
   const sameInteraction = state.words.filter((item) => item.dataset.interactionKey === interactionKey);
-  const sameVerse = state.words.filter((item) => item.dataset.verseKey === verseKey);
 
-  state.words.forEach((item) => item.classList.remove("is-active-word", "is-same-verse"));
-  sameVerse.forEach((item) => item.classList.add("is-same-verse"));
+  // Clicking a word selects only that word — never the whole verse.
+  state.words.forEach((item) => item.classList.remove("is-active-word"));
+  if (!keepVerseHighlight) {
+    state.words.forEach((item) => item.classList.remove("is-active-verse"));
+    state.ayaMarks.forEach((item) => item.classList.remove("is-active-mark"));
+  }
   sameInteraction.forEach((item) => item.classList.add("is-active-word"));
   state.selectedKey = interactionKey;
 
@@ -380,6 +399,26 @@ function selectWord(word) {
   ui.qcfStatus.innerHTML = qcfMatched
     ? '<span class="status-check">✓</span><span>به دادهٔ کلمه‌ای QCF4 متصل شد</span>'
     : '<span class="status-check">!</span><span>SVG لمس‌پذیر است؛ نگاشت QCF4 نیاز به بازبینی دارد</span>';
+}
+
+/*
+ * Clicking the aya mark (۝) selects the entire verse: every word of the
+ * verse is highlighted, and the inspector anchors on the verse's first
+ * logical word so its word-by-word translation is shown.
+ */
+function selectVerse(mark) {
+  const verseKey = mark.dataset.verseKey;
+  if (!verseKey) return;
+
+  state.words.forEach((item) => item.classList.remove("is-active-word", "is-active-verse"));
+  state.ayaMarks.forEach((item) => item.classList.remove("is-active-mark"));
+
+  const verseWords = state.words.filter((item) => item.dataset.verseKey === verseKey);
+  verseWords.forEach((item) => item.classList.add("is-active-verse"));
+  mark.classList.add("is-active-mark");
+
+  const anchor = verseWords.find((item) => (item.dataset.interactionKey || "").startsWith(`${verseKey}:`));
+  if (anchor) selectWord(anchor, { keepVerseHighlight: true });
 }
 
 function renderError() {
@@ -422,6 +461,7 @@ async function loadPage(requestedPage) {
   state.page = page;
   state.qcfPage = null;
   state.words = [];
+  state.ayaMarks = [];
   ui.input.value = String(page);
   ui.pageBadge.textContent = asPersianNumber(page);
   ui.loading.hidden = false;
@@ -505,6 +545,12 @@ ui.targetToggle.addEventListener("click", () => {
 ui.resetSelection.addEventListener("click", clearSelection);
 
 ui.pageHost.addEventListener("pointerup", (event) => {
+  const mark = event.target.closest?.('g[id^="md-aya-mark"]');
+  if (mark && ui.pageHost.contains(mark)) {
+    selectVerse(mark);
+    return;
+  }
+
   const word = event.target.closest?.('g[id^="md-word-"]');
   if (word && ui.pageHost.contains(word)) selectWord(word);
 });

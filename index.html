@@ -6,6 +6,7 @@
     <meta name="theme-color" content="#0c6b4f" />
     <title>مصحف لمسی | SVG عثمانی</title>
     <link rel="stylesheet" href="./styles.css" />
+    <script src="./theme.js"></script>
   </head>
   <body>
     <header class="app-header">
@@ -17,9 +18,16 @@
         </span>
       </a>
 
-      <div class="connection-state" id="connection-state" role="status" aria-live="polite">
-        <span class="state-dot"></span>
-        <span>آمادهٔ بارگذاری</span>
+      <div class="header-side">
+        <div class="connection-state" id="connection-state" role="status" aria-live="polite">
+          <span class="state-dot"></span>
+          <span>آمادهٔ بارگذاری</span>
+        </div>
+
+        <button class="theme-toggle" id="theme-toggle" type="button" title="تم روشن / تاریک" aria-label="تغییر تم روشن و تاریک">
+          <span class="theme-icon theme-icon-moon" aria-hidden="true">☾</span>
+          <span class="theme-icon theme-icon-sun" aria-hidden="true">☀</span>
+        </button>
       </div>
     </header>
 
@@ -61,7 +69,7 @@
         </div>
 
         <p class="reader-note">
-          روی هر کلمه لمس یا کلیک کنید. ظاهر صفحه از SVG و اطلاعات تعاملی از داده‌های QCF4 خوانده می‌شود.
+          روی هر کلمه لمس یا کلیک کنید تا فقط همان کلمه انتخاب شود؛ برای انتخاب کل آیه، نشان آیه (۝) را لمس کنید. ظاهر صفحه از SVG و اطلاعات تعاملی از داده‌های QCF4 خوانده می‌شود.
         </p>
       </section>
 
