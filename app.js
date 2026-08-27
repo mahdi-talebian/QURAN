@@ -44,12 +44,25 @@ const state = {
   selectedKey: null,
   selectedWord: null,
   translations: null,
+  annotations: null,
+  annotationsByVerse: new Map(),
+  annotationsOn: true,
+  pageAnnotations: [],
   sourceOrigins: { svg: ASSET_MODE === "remote" ? "remote" : "local", qcf: ASSET_MODE === "remote" ? "remote" : "local" },
   requestNumber: 0,
 };
 
 // QUL resource 91 — Persian word-by-word translation, keyed "surah:ayah:word".
 const WORD_TRANSLATIONS_URL = new URL("./assets/translations/qul-91-persian-wbw.json", import.meta.url).href;
+
+/*
+ * Waqf / ibtida layer — built by scripts/build_annotations.py from a table of
+ * words. Every entry addresses one word as surah:ayah:position, so a repeated
+ * word such as «لَكُم» can never be tinted in the wrong place.
+ */
+const ANNOTATIONS_URL = new URL("./assets/annotations/waqf-ibtida.json", import.meta.url).href;
+const ANNOTATION_CLASSES = { waqf: "annot-waqf", ibtida: "annot-ibtida" };
+const ANNOTATION_NAMES = { waqf: "وقف", ibtida: "ابتدا" };
 
 
 const ui = {
@@ -75,6 +88,12 @@ const ui = {
   wordTranslation: document.querySelector("#word-translation"),
   verseWbw: document.querySelector("#verse-wbw"),
   qcfStatus: document.querySelector("#qcf-status"),
+  annotToggle: document.querySelector("#toggle-annotations"),
+  annotBadges: document.querySelector("#annot-badges"),
+  annotList: document.querySelector("#annot-list"),
+  annotEmpty: document.querySelector("#annot-empty"),
+  annotCount: document.querySelector("#annot-count"),
+  annotSource: document.querySelector("#annot-source"),
   svgSource: document.querySelector("#svg-source"),
   qcfSource: document.querySelector("#qcf-source"),
   errorTemplate: document.querySelector("#error-template"),
@@ -311,6 +330,10 @@ function installTouchHitAreas(svgRoot) {
 }
 
 function clearSelection() {
+  if (ui.annotBadges) {
+    ui.annotBadges.hidden = true;
+    ui.annotBadges.replaceChildren();
+  }
   state.selectedKey = null;
   state.selectedWord = null;
   state.words.forEach((word) => word.classList.remove("is-active-word", "is-active-verse"));
@@ -340,6 +363,198 @@ function loadWordTranslations() {
 function wordTranslation(verseKey, position) {
   if (!state.translations) return "در حال بارگذاریٔ ترجمه…";
   return state.translations[`${verseKey}:${position}`] || "—";
+}
+
+/* --- Waqf / ibtida layer ------------------------------------------------ */
+
+function loadAnnotations() {
+  return fetch(ANNOTATIONS_URL, { cache: "no-cache" })
+    .then((response) => {
+      if (!response.ok) throw new Error(`Annotation request failed: ${response.status}`);
+      return response.json();
+    })
+    .then((document_) => {
+      const byVerse = new Map();
+      (document_.entries || []).forEach((entry) => {
+        const key = entry.verse_key || `${entry.surah}:${entry.ayah}`;
+        if (!byVerse.has(key)) byVerse.set(key, []);
+        byVerse.get(key).push(entry);
+      });
+
+      state.annotations = document_;
+      state.annotationsByVerse = byVerse;
+      applyAnnotations();
+      renderAnnotationSource();
+      if (state.selectedWord) selectWord(state.selectedWord, { keepVerseHighlight: true });
+    })
+    .catch((error) => {
+      // No annotation file is not an error for the reader itself.
+      state.annotations = null;
+      state.annotationsByVerse = new Map();
+      applyAnnotations();
+      renderAnnotationSource();
+      console.warn("Waqf/ibtida annotations unavailable:", error);
+    });
+}
+
+/*
+ * One logical word can be several SVG groups: a separate conjunction waw and a
+ * trailing pause sign share the interaction key assigned by enrichSvgWords().
+ * Grouping by that key keeps a tint on the whole word, sign included.
+ */
+function logicalUnits() {
+  const units = [];
+  let current = null;
+
+  state.words.forEach((word) => {
+    const key = word.dataset.interactionKey || word.id;
+    if (!current || current.key !== key) {
+      current = { key, verseKey: word.dataset.verseKey, norm: "", groups: [] };
+      units.push(current);
+    }
+    current.groups.push(word);
+    current.norm += normalizeForMatching(word.dataset.hafs || "");
+  });
+
+  return units;
+}
+
+function matchAnnotation(unit) {
+  const entries = state.annotationsByVerse.get(unit.verseKey);
+  if (!entries) return null;
+
+  const position = unit.key.startsWith(`${unit.verseKey}:`)
+    ? toInteger(unit.key.slice(unit.verseKey.length + 1))
+    : NaN;
+
+  // Text first — it is what the table actually names.
+  let candidates = entries.filter((entry) => entry.norm && entry.norm === unit.norm);
+  if (candidates.length > 1 && Number.isInteger(position)) {
+    const exact = candidates.find((entry) => toInteger(entry.position) === position);
+    if (exact) candidates = [exact];
+  }
+  if (candidates.length) return candidates[0];
+
+  // Fall back to the address for words whose Uthmani rasm differs from QCF4.
+  return Number.isInteger(position)
+    ? entries.find((entry) => toInteger(entry.position) === position) || null
+    : null;
+}
+
+function clearAnnotationClasses() {
+  state.words.forEach((word) => {
+    word.classList.remove("annot-waqf", "annot-ibtida");
+    delete word.dataset.annot;
+  });
+  state.pageAnnotations = [];
+}
+
+function applyAnnotations() {
+  if (!state.svg) return;
+  clearAnnotationClasses();
+
+  if (!state.annotationsOn || !state.annotationsByVerse.size) {
+    renderAnnotationList();
+    return;
+  }
+
+  const claimed = new Set();
+
+  logicalUnits().forEach((unit) => {
+    const hit = matchAnnotation(unit);
+    if (!hit || claimed.has(hit)) return;
+
+    const className = ANNOTATION_CLASSES[hit.type];
+    if (!className) return;
+
+    claimed.add(hit);
+    unit.groups.forEach((group) => {
+      group.classList.add(className);
+      group.dataset.annot = hit.type;
+    });
+    state.pageAnnotations.push({ entry: hit, groups: unit.groups });
+  });
+
+  state.pageAnnotations.sort((a, b) => (
+    toInteger(a.entry.surah) - toInteger(b.entry.surah)
+    || toInteger(a.entry.ayah) - toInteger(b.entry.ayah)
+    || toInteger(a.entry.position) - toInteger(b.entry.position)
+  ));
+
+  renderAnnotationList();
+}
+
+function annotationText(entry) {
+  return entry.word || entry.imlaey || "—";
+}
+
+function renderAnnotationList() {
+  if (!ui.annotList) return;
+
+  const items = state.pageAnnotations.map(({ entry }) => {
+    const item = document.createElement("li");
+    item.className = `annot-row annot-row-${entry.type}`;
+
+    const swatch = document.createElement("span");
+    swatch.className = `legend-swatch legend-${entry.type}`;
+    swatch.setAttribute("aria-hidden", "true");
+
+    const word = document.createElement("span");
+    word.className = "annot-word";
+    word.dir = "rtl";
+    word.textContent = annotationText(entry);
+
+    const meta = document.createElement("span");
+    meta.className = "annot-meta";
+    meta.textContent = [
+      `${toInteger(entry.surah)}:${toInteger(entry.ayah)}`,
+      entry.label ? `نشانهٔ ${entry.label}` : ANNOTATION_NAMES[entry.type] || entry.type,
+    ].join(" · ");
+
+    item.append(swatch, word, meta);
+    return item;
+  });
+
+  ui.annotList.replaceChildren(...items);
+  ui.annotEmpty.hidden = items.length > 0;
+  ui.annotCount.textContent = asPersianNumber(items.length);
+}
+
+function renderAnnotationSource() {
+  if (!ui.annotSource) return;
+  const doc = state.annotations;
+
+  if (!doc) {
+    ui.annotSource.textContent = "فایل نشانه‌ها یافت نشد؛ لایهٔ وقف و ابتدا خاموش است.";
+    ui.annotSource.classList.add("is-warning");
+    return;
+  }
+
+  ui.annotSource.classList.remove("is-warning");
+  const stats = doc.stats || {};
+  const demo = stats.demo ? ` · ${asPersianNumber(stats.demo)} ردیف نمونه` : "";
+  ui.annotSource.textContent = `${asPersianNumber(stats.total ?? 0)} نشانه در ${asPersianNumber(stats.pages ?? 0)} صفحه${demo}`;
+}
+
+function renderSelectedBadges(word) {
+  if (!ui.annotBadges) return;
+  const type = word?.dataset?.annot;
+
+  if (!type) {
+    ui.annotBadges.hidden = true;
+    ui.annotBadges.replaceChildren();
+    return;
+  }
+
+  const entry = state.pageAnnotations.find((item) => item.groups.includes(word))?.entry;
+  const badge = document.createElement("span");
+  badge.className = `annot-badge annot-badge-${type}`;
+  badge.textContent = entry?.label
+    ? `${ANNOTATION_NAMES[type] || type} · ${entry.label}`
+    : ANNOTATION_NAMES[type] || type;
+
+  ui.annotBadges.replaceChildren(badge);
+  ui.annotBadges.hidden = false;
 }
 
 function renderVerseTranslations(verseKey, activePosition) {
@@ -385,6 +600,7 @@ function selectWord(word, { keepVerseHighlight = false } = {}) {
 
   ui.selectedWord.textContent = qcfText;
   ui.plainWord.textContent = word.dataset.imlaey || "";
+  renderSelectedBadges(word);
   ui.wordTranslation.textContent = wordTranslation(verseKey, position);
   renderVerseTranslations(verseKey, position);
   ui.verseKey.textContent = `${surah}:${ayah}`;
@@ -503,6 +719,7 @@ async function loadPage(requestedPage) {
     setSourceLinks(page, state.sourceOrigins);
 
     const mapping = enrichSvgWords(svg, qcfPage);
+    applyAnnotations();
     installTouchHitAreas(svg);
     ui.loading.hidden = true;
 
@@ -542,6 +759,12 @@ ui.targetToggle.addEventListener("click", () => {
   ui.pageHost.classList.toggle("show-touch-targets", enabled);
 });
 
+ui.annotToggle?.addEventListener("click", () => {
+  state.annotationsOn = ui.annotToggle.getAttribute("aria-pressed") !== "true";
+  ui.annotToggle.setAttribute("aria-pressed", String(state.annotationsOn));
+  applyAnnotations();
+});
+
 ui.resetSelection.addEventListener("click", clearSelection);
 
 ui.pageHost.addEventListener("pointerup", (event) => {
@@ -556,4 +779,5 @@ ui.pageHost.addEventListener("pointerup", (event) => {
 });
 
 loadWordTranslations();
+loadAnnotations();
 loadPage(state.page);

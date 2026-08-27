@@ -61,6 +61,14 @@
   --word-active: #b1780e;
   --verse-selected: #2e8c68;
   --touch-target-stroke: rgba(29, 131, 92, .45);
+
+  /* Waqf / ibtida layer — red for a stop, blue for a fresh start. */
+  --waqf-ink: #c0272d;
+  --ibtida-ink: #1457b8;
+  --waqf-soft: rgba(192, 39, 45, .12);
+  --ibtida-soft: rgba(20, 87, 184, .12);
+  --waqf-line: rgba(192, 39, 45, .38);
+  --ibtida-line: rgba(20, 87, 184, .38);
 }
 
 html[data-theme="dark"] {
@@ -127,6 +135,14 @@ html[data-theme="dark"] {
   --word-active: #f0c356;
   --verse-selected: #b97b3f;
   --touch-target-stroke: rgba(201, 154, 99, .5);
+
+  /* Lifted for contrast against the dark page. */
+  --waqf-ink: #ff6f66;
+  --ibtida-ink: #7fb2ff;
+  --waqf-soft: rgba(255, 111, 102, .16);
+  --ibtida-soft: rgba(127, 178, 255, .16);
+  --waqf-line: rgba(255, 111, 102, .42);
+  --ibtida-line: rgba(127, 178, 255, .42);
 }
 
 * { box-sizing: border-box; }
@@ -381,6 +397,16 @@ html[data-theme="dark"] .theme-icon-moon { display: none; }
 }
 
 .mushaf-page [id^="md-word-"] { cursor: pointer; transition: filter .25s ease; }
+
+/*
+ * Waqf (red) and ibtida (blue). :not(.is-active-*) keeps the gold selection
+ * readable on top: tapping a marked word still shows it as the selected word.
+ */
+.mushaf-page [id^="md-word-"].annot-waqf:not(.is-active-word):not(.is-active-verse) path,
+.mushaf-page [id^="md-aya-mark"].annot-waqf path { fill: var(--waqf-ink) !important; }
+.mushaf-page [id^="md-word-"].annot-ibtida:not(.is-active-word):not(.is-active-verse) path,
+.mushaf-page [id^="md-aya-mark"].annot-ibtida path { fill: var(--ibtida-ink) !important; }
+
 .mushaf-page [id^="md-word-"].is-active-verse path { fill: var(--verse-selected) !important; }
 /* Declared after the verse rule so the gold anchor word stands out inside a selected verse. */
 .mushaf-page [id^="md-word-"].is-active-word path { fill: var(--word-active) !important; }
@@ -522,11 +548,88 @@ h1 { margin: 0; font-size: 19px; }
 }
 .data-status.is-warning .status-check { background: var(--status-warn-check); }
 
-.architecture-card, .source-card {
+.architecture-card, .source-card, .annot-card {
   margin-top: 24px;
   padding-top: 18px;
   border-top: 1px solid var(--rule);
 }
+
+/* --- Waqf / ibtida layer UI -------------------------------------------- */
+.legend-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex: none;
+}
+.legend-waqf { background: var(--waqf-ink); }
+.legend-ibtida { background: var(--ibtida-ink); }
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.reader-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 2px 0 0;
+}
+
+.annot-toggle { display: inline-flex; align-items: center; gap: 7px; }
+.annot-toggle[aria-pressed="false"] .legend-swatch { opacity: .25; }
+
+.annot-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.annot-card-head h2 { margin: 2px 0 0; font-size: 15px; }
+.annot-legend { display: flex; gap: 18px; margin: 12px 0 0; }
+.annot-source { margin: 10px 0 0; color: var(--faint); font-size: 11px; }
+.annot-source.is-warning { color: var(--error); }
+
+.annot-list {
+  max-height: 260px;
+  margin: 12px 0 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+.annot-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 10px;
+  border: 1px solid var(--cell-line);
+  border-radius: 10px;
+  background: var(--cell);
+}
+.annot-row-waqf { border-color: var(--waqf-line); background: var(--waqf-soft); }
+.annot-row-ibtida { border-color: var(--ibtida-line); background: var(--ibtida-soft); }
+.annot-word { font-size: 14px; color: var(--ink); }
+.annot-meta { margin-inline-start: auto; color: var(--muted); font-size: 10px; white-space: nowrap; }
+.annot-empty { margin: 12px 0 0; color: var(--faint); font-size: 11px; }
+
+.annot-badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 2px; }
+.annot-badges[hidden] { display: none; }
+.annot-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.annot-badge-waqf { color: var(--waqf-ink); background: var(--waqf-soft); border: 1px solid var(--waqf-line); }
+.annot-badge-ibtida { color: var(--ibtida-ink); background: var(--ibtida-soft); border: 1px solid var(--ibtida-line); }
 .architecture-card ul { margin: 8px 0 0; padding: 0 18px 0 0; color: var(--muted); font-size: 11px; line-height: 2.1; }
 .architecture-card strong { color: var(--ink); }
 .source-card { display: grid; gap: 8px; }

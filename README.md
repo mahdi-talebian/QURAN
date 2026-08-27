@@ -22,7 +22,26 @@
 - همگام‌سازی اولیه با `pages/NNN.json` از QCF4
 - پیمایش صفحه و ورود مستقیم شمارهٔ صفحه
 - هایلایت کلمهٔ انتخابی و آیهٔ شامل آن
+- **لایهٔ وقف و ابتدا:** رنگ‌آمیزی **قرمز** برای کلمهٔ وقف و **آبی** برای کلمهٔ ابتدا، از روی جدول کلمات
 - لینک مستقیم به SVG و JSON استفاده‌شده برای هر صفحه
+
+## نشانه‌های وقف و ابتدا
+
+یک جدول کلمه به برنامه داده می‌شود و روی مصحف رنگ می‌گیرد:
+
+| رنگ | معنا |
+|---|---|
+| 🔴 قرمز | **وقف** — کلمه‌ای که رویش می‌ایستیم (به‌همراه علامت وقفِ بعد از آن) |
+| 🔵 آبی | **ابتدا** — کلمه‌ای که قرائت از آن آغاز می‌شود |
+
+```bash
+python3 scripts/build_annotations.py data/annotations/جدول-شما.tsv
+```
+
+هر ردیف در برابر خود مصحف اعتبارسنجی و به نشانی دقیق `سوره:آیه:شمارهٔ کلمه` تبدیل می‌شود؛
+ردیف نگاشت‌نشده بی‌صدا دور ریخته نمی‌شود و گزارش می‌گیرد. قالب کامل جدول، حالت دو فایل
+جدا، رفع ابهام کلمه‌های تکراری و لایهٔ پایهٔ مشتق از علامت‌های چاپ‌شدهٔ مصحف در
+[`ANNOTATIONS_FA.md`](./ANNOTATIONS_FA.md) توضیح داده شده است.
 
 ## اجرا
 
@@ -69,13 +88,16 @@ vendor/
 mushaf-touch/
 ├── index.html                 # رابط کاربری
 ├── styles.css                 # استایل و حالت لمس/هایلایت
-├── app.js                     # لودر SVG، تطبیق QCF4 و event delegation
+├── app.js                     # لودر SVG، تطبیق QCF4، لایهٔ وقف/ابتدا و event delegation
 ├── asset-mode.js              # auto در توسعه / local قطعی در build
 ├── vendor/                    # باندل فشرده و pinned دو منبع
-├── scripts/                   # extract، build و validation
+├── assets/annotations/        # waqf-ibtida.json — خروجی scripts/build_annotations.py
+├── data/annotations/          # جدول‌های ورودی شما (نمونه: example-table.tsv)
+├── scripts/                   # extract، build، ساخت نشانه‌ها و validation
 ├── Dockerfile                 # deploy مستقل با Nginx
 ├── docker-compose.yml
 ├── nginx.conf
+├── ANNOTATIONS_FA.md          # راهنمای قالب جدول وقف و ابتدا
 ├── DEPLOYMENT.md              # راهنمای دقیق deploy
 └── .github/workflows/         # GitHub Pages CI/CD
 ```

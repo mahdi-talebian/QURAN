@@ -51,6 +51,11 @@
           </div>
 
           <div class="toolbar-actions">
+            <button class="subtle-button annot-toggle" id="toggle-annotations" type="button" aria-pressed="true">
+              <span class="legend-swatch legend-waqf" aria-hidden="true"></span>
+              <span class="legend-swatch legend-ibtida" aria-hidden="true"></span>
+              وقف و ابتدا
+            </button>
             <button class="subtle-button" id="toggle-targets" type="button" aria-pressed="false">
               محدودهٔ لمس
             </button>
@@ -71,6 +76,11 @@
         <p class="reader-note">
           روی هر کلمه لمس یا کلیک کنید تا فقط همان کلمه انتخاب شود؛ برای انتخاب کل آیه، نشان آیه (۝) را لمس کنید. ظاهر صفحه از SVG و اطلاعات تعاملی از داده‌های QCF4 خوانده می‌شود.
         </p>
+
+        <div class="reader-legend" aria-label="راهنمای رنگ نشانه‌ها">
+          <span class="legend-item"><span class="legend-swatch legend-waqf" aria-hidden="true"></span>وقف — محل ایست</span>
+          <span class="legend-item"><span class="legend-swatch legend-ibtida" aria-hidden="true"></span>ابتدا — آغاز قرائت</span>
+        </div>
       </section>
 
       <aside class="inspector" aria-label="جزئیات کلمهٔ انتخاب‌شده">
@@ -94,6 +104,8 @@
           <p class="selected-label">متن عثمانی</p>
           <p class="selected-word" id="selected-word" dir="rtl"></p>
           <p class="plain-word" id="plain-word" dir="rtl"></p>
+
+          <div class="annot-badges" id="annot-badges" hidden></div>
 
           <p class="translation-label">ترجمهٔ فارسی (QUL ۹۱ — کلمه‌به‌کلمه)</p>
           <p class="word-translation" id="word-translation" dir="rtl">—</p>
@@ -124,6 +136,25 @@
             <span class="status-check">✓</span>
             <span>به دادهٔ QCF4 متصل شد</span>
           </div>
+        </section>
+
+        <section class="annot-card">
+          <div class="annot-card-head">
+            <div>
+              <p class="eyebrow">لایهٔ نشانه‌ها</p>
+              <h2>وقف و ابتدای این صفحه</h2>
+            </div>
+            <span class="page-badge" id="annot-count">۰</span>
+          </div>
+
+          <div class="annot-legend">
+            <span class="legend-item"><span class="legend-swatch legend-waqf" aria-hidden="true"></span>وقف</span>
+            <span class="legend-item"><span class="legend-swatch legend-ibtida" aria-hidden="true"></span>ابتدا</span>
+          </div>
+
+          <p class="annot-source" id="annot-source">در حال خواندن فایل نشانه‌ها…</p>
+          <ul class="annot-list" id="annot-list"></ul>
+          <p class="annot-empty" id="annot-empty" hidden>روی این صفحه نشانه‌ای ثبت نشده است.</p>
         </section>
 
         <section class="architecture-card">

@@ -2,6 +2,11 @@
 /assets/mushaf-svg/
 /assets/qcf4/
 
+# Only needed by the optional scripts/verify-annotations.mjs harness.
+/node_modules/
+/package-lock.json
+__pycache__/
+
 # Local editor and OS files
 .DS_Store
 .idea/
