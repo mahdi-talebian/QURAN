@@ -16,4 +16,4 @@ assets/
 └── qcf4/        # QCF4 page JSON and indexes
 ```
 
-Then set `window.MUSHAF_ASSET_MODE = "local"` in `asset-mode.js`.
+حالت پیش‌فرض `auto` پس از extraction به‌طور خودکار local files را ترجیح می‌دهد. برای production، `build-static.sh` خودش حالت را به `local` قطعی تبدیل می‌کند.

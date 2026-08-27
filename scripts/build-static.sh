@@ -17,7 +17,7 @@ cp -R "$PROJECT_DIR/assets" "$OUTPUT_DIR/assets"
 "$PROJECT_DIR/scripts/extract-local-assets.sh" "$OUTPUT_DIR/assets"
 
 # The deployable build is always self-hosted, regardless of the development default.
-sed -i 's/window\.MUSHAF_ASSET_MODE = "remote";/window.MUSHAF_ASSET_MODE = "local";/' "$OUTPUT_DIR/asset-mode.js"
+sed -i 's/window\.MUSHAF_ASSET_MODE = "auto";/window.MUSHAF_ASSET_MODE = "local";/' "$OUTPUT_DIR/asset-mode.js"
 touch "$OUTPUT_DIR/.nojekyll"
 
 cat <<EOF

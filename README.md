@@ -39,7 +39,7 @@ python3 -m http.server 4173 --bind 0.0.0.0
 http://localhost:4173
 ```
 
-در حالت پیش‌فرض (`asset-mode.js` روی `remote`)، فایل‌ها در زمان اجرا از GitHub Raw دانلود می‌شوند. هر دو منبع CORS باز دارند.
+در حالت پیش‌فرض (`asset-mode.js` روی `auto`)، برنامه ابتدا assetهای local را بررسی می‌کند؛ اگر هنوز استخراج نشده باشند، فقط در محیط توسعه از GitHub Raw استفاده می‌کند. پس از اجرای حالت local، درخواست‌ها از همان سرور محلی خوانده می‌شوند.
 
 ## بستهٔ local برای سرور شخصی
 
@@ -53,19 +53,15 @@ vendor/
 └── SOURCES.md
 ```
 
-برای بازکردن همهٔ assetها روی سرور شخصی خودت اجرا کن:
+برای توسعهٔ کاملاً local روی کامپیوتر خودت اجرا کن:
 
 ```bash
-./scripts/extract-local-assets.sh
+./scripts/start-local.sh
 ```
 
-این کار حدود 397 مگابایت فایل استخراج می‌کند و شمار 604 SVG و 604 JSON را اعتبارسنجی می‌کند. سپس در `asset-mode.js` مقدار زیر را تغییر بده:
+این دستور در صورت نیاز assetها را استخراج می‌کند، شمار 604 SVG و 604 JSON را اعتبارسنجی می‌کند و سرور محلی را اجرا می‌کند. حالت پیش‌فرض `auto` وجود فایل‌های local را تشخیص می‌دهد؛ بنابراین پس از extraction، برنامه SVGها و JSONها را فقط از همان سرور/کامپیوتر خودت می‌خواند.
 
-```js
-window.MUSHAF_ASSET_MODE = "local";
-```
-
-از این لحظه برنامه SVGها و JSONها را فقط از همان سرور/دامنهٔ خودت می‌خواند و در زمان اجرای کاربر وابستگی به GitHub نخواهد داشت.
+برای production نیز نیازی به تغییر دستی config نداری؛ `build-static.sh` و Docker به‌صورت قطعی حالت `local` را در خروجی deploy فعال می‌کنند.
 
 ## ساختار فایل‌ها
 
@@ -74,7 +70,7 @@ mushaf-touch/
 ├── index.html                 # رابط کاربری
 ├── styles.css                 # استایل و حالت لمس/هایلایت
 ├── app.js                     # لودر SVG، تطبیق QCF4 و event delegation
-├── asset-mode.js              # انتخاب remote در توسعه / local در build
+├── asset-mode.js              # auto در توسعه / local قطعی در build
 ├── vendor/                    # باندل فشرده و pinned دو منبع
 ├── scripts/                   # extract، build و validation
 ├── Dockerfile                 # deploy مستقل با Nginx

@@ -8,27 +8,32 @@
  * The SVG keeps the printed Madinah page visually faithful; QCF4 enriches it.
  */
 
-const ASSET_MODE = window.MUSHAF_ASSET_MODE === "local" ? "local" : "remote";
+const VALID_ASSET_MODES = new Set(["local", "remote", "auto"]);
+const requestedAssetMode = window.MUSHAF_ASSET_MODE || "auto";
+const ASSET_MODE = VALID_ASSET_MODES.has(requestedAssetMode) ? requestedAssetMode : "auto";
 const LOCAL_ASSET_ROOT = new URL("./assets/", import.meta.url).href.replace(/\/$/, "");
 
-const SOURCES = ASSET_MODE === "local"
-  ? {
-      // import.meta.url keeps these paths correct even when deployed under a sub-path.
-      svgRaw: `${LOCAL_ASSET_ROOT}/mushaf-svg`,
-      svgGithub: `${LOCAL_ASSET_ROOT}/mushaf-svg`,
-      qcfRaw: `${LOCAL_ASSET_ROOT}/qcf4/pages`,
-      qcfGithub: `${LOCAL_ASSET_ROOT}/qcf4/pages`,
-    }
-  : {
-      svgRaw:
-        "https://raw.githubusercontent.com/mushafdatabase/MushafDatabase-Ligature-Based-SVG/main/SVG%20V1.01",
-      svgGithub:
-        "https://github.com/mushafdatabase/MushafDatabase-Ligature-Based-SVG/blob/main/SVG%20V1.01",
-      qcfRaw:
-        "https://raw.githubusercontent.com/MohamadHajjRabee/quran-qcf4/main/pages",
-      qcfGithub:
-        "https://github.com/MohamadHajjRabee/quran-qcf4/blob/main/pages",
-    };
+// import.meta.url keeps local asset paths correct even when deployed under a sub-path.
+const SOURCES = {
+  local: {
+    svg: `${LOCAL_ASSET_ROOT}/mushaf-svg`,
+    qcf: `${LOCAL_ASSET_ROOT}/qcf4/pages`,
+  },
+  remote: {
+    svg: "https://raw.githubusercontent.com/mushafdatabase/MushafDatabase-Ligature-Based-SVG/main/SVG%20V1.01",
+    qcf: "https://raw.githubusercontent.com/MohamadHajjRabee/quran-qcf4/main/pages",
+  },
+  sourcePages: {
+    local: {
+      svg: `${LOCAL_ASSET_ROOT}/mushaf-svg`,
+      qcf: `${LOCAL_ASSET_ROOT}/qcf4/pages`,
+    },
+    remote: {
+      svg: "https://github.com/mushafdatabase/MushafDatabase-Ligature-Based-SVG/blob/main/SVG%20V1.01",
+      qcf: "https://github.com/MohamadHajjRabee/quran-qcf4/blob/main/pages",
+    },
+  },
+};
 
 const state = {
   page: 351,
@@ -36,6 +41,7 @@ const state = {
   qcfPage: null,
   words: [],
   selectedKey: null,
+  sourceOrigins: { svg: ASSET_MODE === "remote" ? "remote" : "local", qcf: ASSET_MODE === "remote" ? "remote" : "local" },
   requestNumber: 0,
 };
 
@@ -326,10 +332,30 @@ function renderError() {
   ui.pageHost.replaceChildren(fragment);
 }
 
-function setSourceLinks(page) {
+function setSourceLinks(page, origins = state.sourceOrigins) {
   const file = pageFile(page);
-  ui.svgSource.href = `${SOURCES.svgGithub}/${file}.svg`;
-  ui.qcfSource.href = `${SOURCES.qcfGithub}/${file}.json`;
+  ui.svgSource.href = `${SOURCES.sourcePages[origins.svg]}/${file}.svg`;
+  ui.qcfSource.href = `${SOURCES.sourcePages[origins.qcf]}/${file}.json`;
+}
+
+async function fetchAsset(kind, file) {
+  const filename = `${file}.${kind === "svg" ? "svg" : "json"}`;
+
+  // Production builds set mode=local: never silently fall back to an upstream source.
+  if (ASSET_MODE !== "remote") {
+    try {
+      const localResponse = await fetch(`${SOURCES.local[kind]}/${filename}`, { cache: "force-cache" });
+      if (localResponse.ok || ASSET_MODE === "local") {
+        return { response: localResponse, origin: "local" };
+      }
+    } catch (error) {
+      if (ASSET_MODE === "local") throw error;
+    }
+  }
+
+  // Development's auto mode stays convenient even before local assets are extracted.
+  const remoteResponse = await fetch(`${SOURCES.remote[kind]}/${filename}`, { cache: "force-cache" });
+  return { response: remoteResponse, origin: "remote" };
 }
 
 async function loadPage(requestedPage) {
@@ -348,14 +374,12 @@ async function loadPage(requestedPage) {
   setSourceLinks(page);
   setConnection("loading", "در حال دریافت SVG و دادهٔ QCF4");
 
-  const svgRequest = fetch(`${SOURCES.svgRaw}/${file}.svg`);
-  const qcfRequest = fetch(`${SOURCES.qcfRaw}/${file}.json`);
+  const svgRequest = fetchAsset("svg", file);
+  const qcfRequest = fetchAsset("qcf", file).catch(() => null);
 
   try {
-    const [svgResponse, qcfResult] = await Promise.all([
-      svgRequest,
-      qcfRequest.catch(() => null),
-    ]);
+    const [svgAsset, qcfAsset] = await Promise.all([svgRequest, qcfRequest]);
+    const svgResponse = svgAsset.response;
 
     if (!svgResponse.ok) throw new Error(`SVG request failed: ${svgResponse.status}`);
     const svgText = await svgResponse.text();
@@ -371,10 +395,16 @@ async function loadPage(requestedPage) {
     state.svg = svg;
 
     let qcfPage = null;
-    if (qcfResult?.ok) {
-      qcfPage = await qcfResult.json();
+    if (qcfAsset?.response?.ok) {
+      qcfPage = await qcfAsset.response.json();
       state.qcfPage = qcfPage;
     }
+
+    state.sourceOrigins = {
+      svg: svgAsset.origin,
+      qcf: qcfAsset?.origin || svgAsset.origin,
+    };
+    setSourceLinks(page, state.sourceOrigins);
 
     const mapping = enrichSvgWords(svg, qcfPage);
     installTouchHitAreas(svg);

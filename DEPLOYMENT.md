@@ -117,8 +117,8 @@ sudo ./scripts/build-static.sh /var/www/mushaf-touch
 
 ## حالت توسعه در برابر production
 
-- در سورس پروژه، `asset-mode.js` روی `remote` است تا Preview سبک بماند.
-- `build-static.sh` در خروجی deploy به‌طور خودکار آن را به `local` تبدیل می‌کند.
+- در سورس پروژه، `asset-mode.js` روی `auto` است: local files را در صورت وجود ترجیح می‌دهد و فقط در development بدون asset استخراج‌شده از remote fallback استفاده می‌کند.
+- `build-static.sh` در خروجی deploy به‌طور خودکار آن را به `local` قطعی تبدیل می‌کند؛ در production هیچ upstream fallback وجود ندارد.
 - بنابراین تغییر دستی source برای deploy لازم نیست.
 
 ## بازگردانی یا حذف assetهای استخراج‌شده

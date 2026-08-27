@@ -35,6 +35,6 @@ Local assets extracted successfully.
   SVG pages : $svg_count
   QCF4 pages: $qcf_count
 
-To use your own server copies instead of GitHub Raw, edit asset-mode.js:
-  window.MUSHAF_ASSET_MODE = "local";
+asset-mode.js is in auto mode, so local files will now be preferred automatically.
+Production builds force strict local mode with no upstream fallback.
 EOF
