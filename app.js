@@ -36,7 +36,9 @@ const SOURCES = {
 };
 
 const state = {
-  page: 351,
+  page: 2,
+  mohasha: null,
+  showWaqf: true,
   svg: null,
   qcfPage: null,
   words: [],
@@ -49,6 +51,7 @@ const state = {
 
 // QUL resource 91 — Persian word-by-word translation, keyed "surah:ayah:word".
 const WORD_TRANSLATIONS_URL = new URL("./assets/translations/qul-91-persian-wbw.json", import.meta.url).href;
+const MOHASHA_URL = new URL("./assets/mohasha-waqf.json", import.meta.url).href;
 
 
 const ui = {
@@ -61,6 +64,7 @@ const ui = {
   previous: document.querySelector("#previous-page"),
   next: document.querySelector("#next-page"),
   targetToggle: document.querySelector("#toggle-targets"),
+  waqfToggle: document.querySelector("#toggle-waqf"),
   resetSelection: document.querySelector("#reset-selection"),
   empty: document.querySelector("#empty-state"),
   details: document.querySelector("#word-details"),
@@ -305,6 +309,92 @@ function clearSelection() {
 }
 
 /* --- QUL 91: Persian word-by-word translation (single lazy fetch) --- */
+function phraseTokens(phrase = "") {
+  const out = [];
+  phrase.split(/\s+/).forEach((part) => {
+    const token = normalizeForMatching(part);
+    if (!token) return;
+    if (token.startsWith("و") && token.length > 2) {
+      out.push("و", token.slice(1));
+    } else {
+      out.push(token);
+    }
+  });
+  return out;
+}
+
+function verseLogicalWords(verseKey) {
+  const seen = new Set();
+  const logical = [];
+  state.words.forEach((word) => {
+    if (word.dataset.verseKey !== verseKey) return;
+    if (isVisualPunctuation(word.dataset.hafs || "")) return;
+    const key = word.dataset.interactionKey;
+    if (!key || seen.has(key)) return;
+    seen.add(key);
+    const parts = state.words.filter((item) => item.dataset.interactionKey === key);
+    const text = parts.map((part) => normalizeForMatching(part.dataset.hafs || "")).join("");
+    logical.push({ key, text, parts });
+  });
+  return logical;
+}
+
+function foldToken(token = "") {
+  let value = token.replace(/ء/g, "").replace(/ا/g, "");
+  if (value.startsWith("و") && value.length > 2) value = value.slice(1);
+  return value;
+}
+
+function tokensClose(a, b) {
+  if (!a || !b) return false;
+  if (a === b || a.endsWith(b) || b.endsWith(a)) return true;
+  const fa = foldToken(a);
+  const fb = foldToken(b);
+  return fa === fb || fa.endsWith(fb) || fb.endsWith(fa);
+}
+
+function markPhrase(logical, phrase, className, markLast) {
+  const wanted = phraseTokens(phrase);
+  if (!wanted.length) return;
+  const texts = logical.map((item) => item.text);
+  for (let i = 0; i <= texts.length - wanted.length; i += 1) {
+    if (!wanted.every((token, offset) => tokensClose(texts[i + offset], token))) continue;
+    const target = logical[markLast ? i + wanted.length - 1 : i];
+    target.parts.forEach((part) => part.classList.add(className));
+    return;
+  }
+}
+
+function applyMohashaHighlights() {
+  state.words.forEach((word) => word.classList.remove("is-waqf", "is-ibtida"));
+  if (!state.showWaqf || !state.mohasha?.verses) return;
+
+  const verseKeys = new Set(state.words.map((word) => word.dataset.verseKey).filter(Boolean));
+  verseKeys.forEach((verseKey) => {
+    const entry = state.mohasha.verses[verseKey];
+    if (!entry) return;
+    const logical = verseLogicalWords(verseKey);
+    (entry.waqf || []).forEach((phrase) => markPhrase(logical, phrase, "is-waqf", true));
+    (entry.ibtida || []).forEach((phrase) => markPhrase(logical, phrase, "is-ibtida", false));
+  });
+}
+
+function loadMohashaTable() {
+  return fetch(MOHASHA_URL, { cache: "force-cache" })
+    .then((response) => {
+      if (!response.ok) throw new Error(`Mohasha request failed: ${response.status}`);
+      return response.json();
+    })
+    .then((data) => {
+      state.mohasha = data;
+      applyMohashaHighlights();
+    })
+    .catch((error) => {
+      state.mohasha = { verses: {} };
+      console.warn("Mohasha table unavailable:", error);
+    });
+}
+
 function loadWordTranslations() {
   return fetch(WORD_TRANSLATIONS_URL, { cache: "force-cache" })
     .then((response) => {
@@ -463,6 +553,7 @@ async function loadPage(requestedPage) {
     setSourceLinks(page, state.sourceOrigins);
 
     const mapping = enrichSvgWords(svg, qcfPage);
+    applyMohashaHighlights();
     installTouchHitAreas(svg);
     ui.loading.hidden = true;
 
@@ -496,6 +587,12 @@ ui.input.addEventListener("keydown", (event) => {
   if (event.key === "Enter") ui.input.blur();
 });
 
+ui.waqfToggle.addEventListener("click", () => {
+  state.showWaqf = ui.waqfToggle.getAttribute("aria-pressed") !== "true";
+  ui.waqfToggle.setAttribute("aria-pressed", String(state.showWaqf));
+  applyMohashaHighlights();
+});
+
 ui.targetToggle.addEventListener("click", () => {
   const enabled = ui.targetToggle.getAttribute("aria-pressed") !== "true";
   ui.targetToggle.setAttribute("aria-pressed", String(enabled));
@@ -509,5 +606,6 @@ ui.pageHost.addEventListener("pointerup", (event) => {
   if (word && ui.pageHost.contains(word)) selectWord(word);
 });
 
+loadMohashaTable();
 loadWordTranslations();
 loadPage(state.page);

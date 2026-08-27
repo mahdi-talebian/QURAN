@@ -33,7 +33,7 @@
 
             <label class="page-input-wrap" for="page-number">
               <span>صفحه</span>
-              <input id="page-number" inputmode="numeric" min="1" max="604" value="351" />
+              <input id="page-number" inputmode="numeric" min="1" max="604" value="2" />
               <span class="page-total">از ۶۰۴</span>
             </label>
 
@@ -43,6 +43,13 @@
           </div>
 
           <div class="toolbar-actions">
+            <span class="waqf-legend" aria-hidden="true">
+              <span><i class="swatch waqf"></i> وقف</span>
+              <span><i class="swatch ibtida"></i> ابتدا</span>
+            </span>
+            <button class="subtle-button" id="toggle-waqf" type="button" aria-pressed="true">
+              وقف و ابتدا
+            </button>
             <button class="subtle-button" id="toggle-targets" type="button" aria-pressed="false">
               محدودهٔ لمس
             </button>
