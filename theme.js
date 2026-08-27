@@ -8,7 +8,7 @@
  */
 (function () {
   const STORAGE_KEY = "mushaf-theme";
-  const META_COLORS = { light: "#0c6b4f", dark: "#0e0d0a" };
+  const META_COLORS = { light: "#0c6b4f", dark: "#120d08" };
 
   function storedTheme() {
     try {

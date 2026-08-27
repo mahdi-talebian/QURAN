@@ -15,6 +15,8 @@
   --gold: #b57f19;
   --error: #a73d3d;
   --shadow: 0 18px 50px rgba(18, 57, 44, 0.11);
+  --panel-shadow: 0 12px 35px rgba(27, 69, 54, .06);
+  --card-shadow: 0 9px 30px rgba(26, 74, 55, .12);
   --focus-ring: rgba(13, 115, 84, .34);
 
   --header-bg: rgba(255, 255, 252, .78);
@@ -63,66 +65,68 @@
 
 html[data-theme="dark"] {
   color-scheme: dark;
-  --ink: #f7f4ec;
-  --muted: #a49b88;
-  --faint: #857c6b;
-  --soft: #1d1a13;
-  --line: rgba(214, 194, 150, .18);
-  --rule: rgba(214, 194, 150, .12);
-  --paper: #16140f;
-  --canvas: #0e0d0a;
-  --accent: #d9b04a;
-  --accent-strong: #f0c75e;
-  --accent-soft: rgba(217, 176, 74, .14);
-  --accent-border: #8a6d2f;
+  --ink: #f8f4ec;
+  --muted: #b3a58f;
+  --faint: #8d8070;
+  --soft: #221a12;
+  --line: rgba(216, 190, 155, .18);
+  --rule: rgba(216, 190, 155, .12);
+  --paper: #1c140d;
+  --canvas: #120d08;
+  --accent: #c99a63;
+  --accent-strong: #e3bd8b;
+  --accent-soft: rgba(201, 154, 99, .15);
+  --accent-border: #8a6a42;
   --gold: #e3b23c;
   --error: #e28282;
   --shadow: 0 18px 50px rgba(0, 0, 0, .5);
-  --focus-ring: rgba(232, 200, 120, .45);
+  --focus-ring: rgba(227, 189, 139, .45);
 
-  --header-bg: rgba(20, 18, 13, .84);
-  --header-line: rgba(214, 194, 150, .13);
-  --canvas-glow-1: rgba(217, 176, 74, .1);
-  --canvas-glow-2: rgba(178, 132, 60, .08);
+  --header-bg: rgba(24, 18, 12, .84);
+  --header-line: rgba(216, 190, 155, .13);
+  --canvas-glow-1: rgba(150, 105, 60, .14);
+  --canvas-glow-2: rgba(110, 75, 40, .1);
 
-  --surface: rgba(26, 23, 17, .9);
-  --surface-line: rgba(214, 194, 150, .16);
-  --raised: rgba(33, 29, 21, .92);
-  --raised-hover: #262217;
-  --raised-hover-line: #9c7f3a;
-  --field: #191611;
-  --card-bg: rgba(24, 21, 16, .96);
-  --card-line: rgba(214, 194, 150, .17);
-  --spinner-track: rgba(214, 194, 150, .22);
+  --surface: rgba(30, 22, 15, .9);
+  --surface-line: rgba(216, 190, 155, .16);
+  --raised: rgba(38, 28, 19, .92);
+  --raised-hover: #2c2115;
+  --raised-hover-line: #a9835a;
+  --field: #20170f;
+  --card-bg: rgba(28, 20, 14, .96);
+  --card-line: rgba(216, 190, 155, .17);
+  --spinner-track: rgba(216, 190, 155, .22);
+  --panel-shadow: 0 12px 35px rgba(0, 0, 0, .45);
+  --card-shadow: 0 9px 30px rgba(0, 0, 0, .4);
 
-  --grid-border: rgba(214, 194, 150, .16);
-  --grid-line-1: rgba(217, 190, 120, .05);
-  --grid-line-2: rgba(217, 190, 120, .04);
-  --frame-border: rgba(217, 176, 74, .34);
-  --frame-glow: rgba(217, 176, 74, .1);
-  --frame-ornament: rgba(222, 190, 110, .5);
+  --grid-border: rgba(216, 190, 155, .16);
+  --grid-line-1: rgba(220, 190, 140, .05);
+  --grid-line-2: rgba(220, 190, 140, .04);
+  --frame-border: rgba(201, 154, 99, .35);
+  --frame-glow: rgba(201, 154, 99, .1);
+  --frame-ornament: rgba(214, 176, 120, .5);
 
-  --cell-line: rgba(214, 194, 150, .14);
-  --cell: #1e1a13;
-  --status-bg: rgba(217, 176, 74, .12);
-  --status-ink: #e2c979;
-  --status-check: #b98e2e;
+  --cell-line: rgba(216, 190, 155, .14);
+  --cell: #251b12;
+  --status-bg: rgba(201, 154, 99, .13);
+  --status-ink: #e0bd8e;
+  --status-check: #a87b4a;
   --status-warn-bg: rgba(227, 178, 60, .12);
   --status-warn-ink: #e5c473;
   --status-warn-check: #c08a2e;
-  --dot-idle: #565043;
-  --dot-success: #d9b04a;
-  --link-line: rgba(217, 176, 74, .45);
-  --chip-bg: #1a1712;
-  --chip-active-ink: #241a04;
+  --dot-idle: #5a4e40;
+  --dot-success: #c99a63;
+  --link-line: rgba(201, 154, 99, .45);
+  --chip-bg: #261c12;
+  --chip-active-ink: #261506;
 
-  /* Dark theme: white Quran text, gold hover, copper for the same verse. */
+  /* Dark theme: white Quran text, golden hover, coffee-brown verse highlight. */
   --quran-ink: #f8f6ef;
   --selected-ink: #f8f6ef;
   --word-hover: #e8b64c;
   --word-active: #f0c356;
-  --verse-selected: #cf8437;
-  --touch-target-stroke: rgba(217, 176, 74, .5);
+  --verse-selected: #b97b3f;
+  --touch-target-stroke: rgba(201, 154, 99, .5);
 }
 
 * { box-sizing: border-box; }
@@ -187,9 +191,9 @@ body, .app-header, .inspector, .mushaf-stage, .loading-card, .error-card,
 .brand strong { display: block; font-size: 16px; line-height: 1.2; }
 .brand small { display: block; color: var(--muted); font-size: 11px; margin-top: 3px; }
 
-/* Gold brand emblem in the dark theme — no green left there. */
+/* Coffee-brown brand emblem in the dark theme — no green left there. */
 html[data-theme="dark"] .brand-mark {
-  background: linear-gradient(145deg, #e0b54e, #8a6414);
+  background: linear-gradient(145deg, #c99a63, #5f3f1f);
   box-shadow: 0 8px 17px rgba(0, 0, 0, .4);
 }
 
@@ -411,7 +415,7 @@ html[data-theme="dark"] .mushaf-page [id^="md-aya-mark"].is-active-mark {
   border: 1px solid var(--card-line);
   border-radius: 12px;
   background: var(--card-bg);
-  box-shadow: 0 9px 30px rgba(26, 74, 55, .12);
+  box-shadow: var(--card-shadow);
 }
 .loading-card[hidden] { display: none; }
 .error-card { flex-direction: column; max-width: 320px; text-align: center; }
@@ -444,7 +448,7 @@ html[data-theme="dark"] .mushaf-page [id^="md-aya-mark"].is-active-mark {
   border: 1px solid var(--surface-line);
   border-radius: 16px;
   background: var(--surface);
-  box-shadow: 0 12px 35px rgba(27, 69, 54, .06);
+  box-shadow: var(--panel-shadow);
 }
 .inspector-head { display: flex; align-items: start; justify-content: space-between; gap: 12px; }
 .eyebrow { margin: 0 0 4px; color: var(--accent); font-size: 11px; font-weight: 700; }
