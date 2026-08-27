@@ -57,7 +57,7 @@
   --selected-ink: #122f27;
   --word-hover: var(--accent);
   --word-active: #b1780e;
-  --word-same-verse: #2e8c68;
+  --verse-selected: #2e8c68;
   --touch-target-stroke: rgba(29, 131, 92, .45);
 }
 
@@ -121,7 +121,7 @@ html[data-theme="dark"] {
   --selected-ink: #f8f6ef;
   --word-hover: #e8b64c;
   --word-active: #f0c356;
-  --word-same-verse: #cf8437;
+  --verse-selected: #cf8437;
   --touch-target-stroke: rgba(217, 176, 74, .5);
 }
 
@@ -377,13 +377,25 @@ html[data-theme="dark"] .theme-icon-moon { display: none; }
 }
 
 .mushaf-page [id^="md-word-"] { cursor: pointer; transition: filter .25s ease; }
+.mushaf-page [id^="md-word-"].is-active-verse path { fill: var(--verse-selected) !important; }
+/* Declared after the verse rule so the gold anchor word stands out inside a selected verse. */
 .mushaf-page [id^="md-word-"].is-active-word path { fill: var(--word-active) !important; }
-.mushaf-page [id^="md-word-"].is-same-verse path { fill: var(--word-same-verse) !important; }
-.mushaf-page.show-touch-targets [id^="md-word-"] path { stroke: var(--touch-target-stroke); stroke-width: .28px; }
+.mushaf-page.show-touch-targets [id^="md-word-"] path,
+.mushaf-page.show-touch-targets [id^="md-aya-mark"] path { stroke: var(--touch-target-stroke); stroke-width: .28px; }
 
 /* Hover animation: every word tints smoothly — golden in the dark theme. */
 .mushaf-page [id^="md-word-"]:hover path { fill: var(--word-hover) !important; }
 html[data-theme="dark"] .mushaf-page [id^="md-word-"]:hover {
+  filter: drop-shadow(0 0 6px rgba(232, 182, 76, .45));
+}
+
+/* Aya marks (۝) act as "select the whole verse" controls. */
+.mushaf-page [id^="md-aya-mark"] { transition: filter .25s ease; }
+.mushaf-page [id^="md-aya-mark"][data-verse-key] { cursor: pointer; }
+.mushaf-page [id^="md-aya-mark"][data-verse-key]:hover path,
+.mushaf-page [id^="md-aya-mark"].is-active-mark path { fill: var(--word-hover) !important; }
+html[data-theme="dark"] .mushaf-page [id^="md-aya-mark"][data-verse-key]:hover,
+html[data-theme="dark"] .mushaf-page [id^="md-aya-mark"].is-active-mark {
   filter: drop-shadow(0 0 6px rgba(232, 182, 76, .45));
 }
 
@@ -523,8 +535,10 @@ h1 { margin: 0; font-size: 19px; }
 
 @media (prefers-reduced-motion: reduce) {
   .mushaf-page svg path,
-  .mushaf-page [id^="md-word-"] { transition: none; }
+  .mushaf-page [id^="md-word-"],
+  .mushaf-page [id^="md-aya-mark"] { transition: none; }
   html[data-theme="dark"] .mushaf-page [id^="md-word-"]:hover { filter: none; }
+  html[data-theme="dark"] .mushaf-page [id^="md-aya-mark"]:hover { filter: none; }
   .theme-toggle:hover { transform: none; }
 }
 
