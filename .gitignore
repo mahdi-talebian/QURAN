@@ -2,7 +2,10 @@
 /assets/mushaf-svg/
 /assets/qcf4/
 
+mohasha.pdf
+
 # Local editor and OS files
 .DS_Store
 .idea/
 .vscode/
+__pycache__/

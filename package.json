@@ -7,6 +7,7 @@
     "serve": "python3 -m http.server 4173 --bind 0.0.0.0",
     "serve:local": "bash scripts/start-local.sh",
     "verify": "python3 scripts/verify-vendored-assets.py",
+    "test": "python3 -m unittest discover -s tests -v",
     "extract-assets": "bash scripts/extract-local-assets.sh",
     "build": "bash scripts/build-static.sh site",
     "clean-assets": "bash scripts/remove-extracted-assets.sh"

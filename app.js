@@ -36,11 +36,12 @@ const SOURCES = {
 };
 
 const state = {
-  page: 351,
+  page: 2,
+  mohasha: null,
+  showWaqf: true,
   svg: null,
   qcfPage: null,
   words: [],
-  ayaMarks: [],
   selectedKey: null,
   selectedWord: null,
   translations: null,
@@ -50,6 +51,7 @@ const state = {
 
 // QUL resource 91 — Persian word-by-word translation, keyed "surah:ayah:word".
 const WORD_TRANSLATIONS_URL = new URL("./assets/translations/qul-91-persian-wbw.json", import.meta.url).href;
+const MOHASHA_URL = new URL("./assets/mohasha-waqf.json", import.meta.url).href;
 
 
 const ui = {
@@ -62,6 +64,7 @@ const ui = {
   previous: document.querySelector("#previous-page"),
   next: document.querySelector("#next-page"),
   targetToggle: document.querySelector("#toggle-targets"),
+  waqfToggle: document.querySelector("#toggle-waqf"),
   resetSelection: document.querySelector("#reset-selection"),
   empty: document.querySelector("#empty-state"),
   details: document.querySelector("#word-details"),
@@ -112,13 +115,21 @@ function decodeEntities(value = "") {
 function normalizeForMatching(value = "") {
   return decodeEntities(value)
     .normalize("NFD")
-    .replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED\u0640\u200C-\u200F]/g, "")
+    .replace(/\u06E5/g, "و")
+    .replace(/\u06E6/g, "و")
+    .replace(/\u06E7/g, "ي")
+    .replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06E4\u06E8-\u06ED\u0640\u200C-\u200F]/g, "")
     .replace(/[ٱأإآ]/g, "ا")
     .replace(/ى/g, "ي")
     .replace(/ؤ/g, "و")
     .replace(/ئ/g, "ي")
+    .replace(/ء/g, "")
     .replace(/ة/g, "ه")
-    .replace(/[^\u0621-\u063A\u0641-\u064A]/g, "");
+    .replace(/ک/g, "ك")
+    .replace(/ی/g, "ي")
+    .replace(/[^\u0621-\u063A\u0641-\u064A]/g, "")
+    .replace(/ي+/g, "ي")
+    .replace(/و+/g, "و");
 }
 
 function isVisualPunctuation(value) {
@@ -266,27 +277,13 @@ function enrichSvgWords(svgRoot, qcfPage) {
   });
 
   state.words = svgWords;
-  attachAyaMarks(svgRoot);
   return { totalMatched, totalLogicalWords, qcfAvailable: qcfByVerse.size > 0 };
-}
-
-/*
- * Aya marks (۝) carry data-surah/data-aya, so each mark knows its verse.
- * They act as a "select the whole verse" control.
- */
-function attachAyaMarks(svgRoot) {
-  state.ayaMarks = Array.from(svgRoot.querySelectorAll('g[id^="md-aya-mark"]'));
-  state.ayaMarks.forEach((mark) => {
-    if (mark.dataset.surah && mark.dataset.aya) {
-      mark.dataset.verseKey = verseKeyFromSvgWord(mark);
-    }
-  });
 }
 
 function installTouchHitAreas(svgRoot) {
   // A transparent rectangle enlarges tiny diacritics/short words for finger taps.
   requestAnimationFrame(() => {
-    svgRoot.querySelectorAll('g[id^="md-word-"], g[id^="md-aya-mark"]').forEach((word) => {
+    svgRoot.querySelectorAll('g[id^="md-word-"]').forEach((word) => {
       if (word.querySelector(":scope > .touch-hitbox")) return;
 
       try {
@@ -313,14 +310,104 @@ function installTouchHitAreas(svgRoot) {
 function clearSelection() {
   state.selectedKey = null;
   state.selectedWord = null;
-  state.words.forEach((word) => word.classList.remove("is-active-word", "is-active-verse"));
-  state.ayaMarks.forEach((mark) => mark.classList.remove("is-active-mark"));
+  state.words.forEach((word) => word.classList.remove("is-active-word", "is-same-verse"));
   ui.resetSelection.disabled = true;
   ui.details.hidden = true;
   ui.empty.hidden = false;
 }
 
 /* --- QUL 91: Persian word-by-word translation (single lazy fetch) --- */
+function phraseTokens(phrase = "") {
+  const out = [];
+  phrase.split(/\s+/).forEach((part) => {
+    const token = normalizeForMatching(part);
+    if (!token) return;
+    if (token.startsWith("و") && token.length > 2) {
+      out.push("و", token.slice(1));
+    } else {
+      out.push(token);
+    }
+  });
+  return out;
+}
+
+function verseLogicalWords(verseKey) {
+  const seen = new Set();
+  const logical = [];
+  state.words.forEach((word) => {
+    if (word.dataset.verseKey !== verseKey) return;
+    if (isVisualPunctuation(word.dataset.hafs || "")) return;
+    const key = word.dataset.interactionKey;
+    if (!key || seen.has(key)) return;
+    seen.add(key);
+    const parts = state.words.filter((item) => item.dataset.interactionKey === key);
+    const text = parts.map((part) => normalizeForMatching(part.dataset.hafs || "")).join("");
+    logical.push({ key, text, parts });
+  });
+  return logical;
+}
+
+function foldToken(token = "") {
+  return token.replace(/[اويء]/g, "");
+}
+
+function tokensClose(a, b) {
+  if (!a || !b) return false;
+  if (a === b || a.endsWith(b) || b.endsWith(a)) return true;
+  const fa = foldToken(a);
+  const fb = foldToken(b);
+  return fa === fb || fa.endsWith(fb) || fb.endsWith(fa);
+}
+
+function markPhrase(logical, phrase, className, markLast) {
+  const wanted = phraseTokens(phrase);
+  if (!wanted.length) return;
+  const texts = logical.map((item) => item.text);
+  for (let i = 0; i <= texts.length - wanted.length; i += 1) {
+    if (!wanted.every((token, offset) => tokensClose(texts[i + offset], token))) continue;
+    const target = logical[markLast ? i + wanted.length - 1 : i];
+    target.parts.forEach((part) => part.classList.add(className));
+    return;
+  }
+  const last = [...wanted].reverse().find((token) => token !== "و" && foldToken(token).length >= 2);
+  if (!last) return;
+  const idx = markLast
+    ? [...texts.keys()].reverse().find((i) => tokensClose(texts[i], last))
+    : texts.findIndex((text) => tokensClose(text, last));
+  if (idx === undefined || idx < 0) return;
+  logical[idx].parts.forEach((part) => part.classList.add(className));
+}
+
+function applyMohashaHighlights() {
+  state.words.forEach((word) => word.classList.remove("is-waqf", "is-ibtida"));
+  if (!state.showWaqf || !state.mohasha?.verses) return;
+
+  const verseKeys = new Set(state.words.map((word) => word.dataset.verseKey).filter(Boolean));
+  verseKeys.forEach((verseKey) => {
+    const entry = state.mohasha.verses[verseKey];
+    if (!entry) return;
+    const logical = verseLogicalWords(verseKey);
+    (entry.waqf || []).forEach((phrase) => markPhrase(logical, phrase, "is-waqf", true));
+    (entry.ibtida || []).forEach((phrase) => markPhrase(logical, phrase, "is-ibtida", false));
+  });
+}
+
+function loadMohashaTable() {
+  return fetch(MOHASHA_URL, { cache: "force-cache" })
+    .then((response) => {
+      if (!response.ok) throw new Error(`Mohasha request failed: ${response.status}`);
+      return response.json();
+    })
+    .then((data) => {
+      state.mohasha = data;
+      applyMohashaHighlights();
+    })
+    .catch((error) => {
+      state.mohasha = { verses: {} };
+      console.warn("Mohasha table unavailable:", error);
+    });
+}
+
 function loadWordTranslations() {
   return fetch(WORD_TRANSLATIONS_URL, { cache: "force-cache" })
     .then((response) => {
@@ -329,7 +416,7 @@ function loadWordTranslations() {
     })
     .then((data) => {
       state.translations = data;
-      if (state.selectedWord) selectWord(state.selectedWord, { keepVerseHighlight: true });
+      if (state.selectedWord) selectWord(state.selectedWord);
     })
     .catch((error) => {
       state.translations = {};
@@ -362,18 +449,41 @@ function renderVerseTranslations(verseKey, activePosition) {
 }
 
 
-function selectWord(word, { keepVerseHighlight = false } = {}) {
+function selectWord(word) {
   const interactionKey = word.dataset.interactionKey || word.id;
   const verseKey = word.dataset.verseKey || verseKeyFromSvgWord(word);
   const qcfMatched = word.dataset.qcfMatched === "true";
   const sameInteraction = state.words.filter((item) => item.dataset.interactionKey === interactionKey);
+  const sameVerse = state.words.filter((item) => item.dataset.verseKey === verseKey);
 
-  // Clicking a word selects only that word — never the whole verse.
-  state.words.forEach((item) => item.classList.remove("is-active-word"));
-  if (!keepVerseHighlight) {
-    state.words.forEach((item) => item.classList.remove("is-active-verse"));
-    state.ayaMarks.forEach((item) => item.classList.remove("is-active-mark"));
-  }
+  state.words.forEach((item) => item.classList.remove("is-active-word", "is-same-verse"));
+  sameVerse.forEach((item) => item.classList.add("is-same-verse"));
+  sameInteraction.forEach((item) => item.cries(state.translations)
+    .filter(([key, value]) => key.startsWith(prefix) && Number.isInteger(toInteger(key.slice(prefix.length))) && !/^\d+$/.test(value.trim()))
+    .map(([key, value]) => ({ position: toInteger(key.slice(prefix.length)), value }))
+    .sort((a, b) => a.position - b.position)
+    .map(({ position, value }) => {
+      const chip = document.createElement("span");
+      chip.className = "wbw-chip";
+      if (position === activePosition) chip.classList.add("is-active");
+      chip.textContent = value;
+      return chip;
+    });
+
+  ui.verseWbw.replaceChildren(...chips);
+  ui.verseWbw.hidden = chips.length === 0;
+}
+
+
+function selectWord(word) {
+  const interactionKey = word.dataset.interactionKey || word.id;
+  const verseKey = word.dataset.verseKey || verseKeyFromSvgWord(word);
+  const qcfMatched = word.dataset.qcfMatched === "true";
+  const sameInteraction = state.words.filter((item) => item.dataset.interactionKey === interactionKey);
+  const sameVerse = state.words.filter((item) => item.dataset.verseKey === verseKey);
+
+  state.words.forEach((item) => item.classList.remove("is-active-word", "is-same-verse"));
+  sameVerse.forEach((item) => item.classList.add("is-same-verse"));
   sameInteraction.forEach((item) => item.classList.add("is-active-word"));
   state.selectedKey = interactionKey;
 
@@ -399,26 +509,6 @@ function selectWord(word, { keepVerseHighlight = false } = {}) {
   ui.qcfStatus.innerHTML = qcfMatched
     ? '<span class="status-check">✓</span><span>به دادهٔ کلمه‌ای QCF4 متصل شد</span>'
     : '<span class="status-check">!</span><span>SVG لمس‌پذیر است؛ نگاشت QCF4 نیاز به بازبینی دارد</span>';
-}
-
-/*
- * Clicking the aya mark (۝) selects the entire verse: every word of the
- * verse is highlighted, and the inspector anchors on the verse's first
- * logical word so its word-by-word translation is shown.
- */
-function selectVerse(mark) {
-  const verseKey = mark.dataset.verseKey;
-  if (!verseKey) return;
-
-  state.words.forEach((item) => item.classList.remove("is-active-word", "is-active-verse"));
-  state.ayaMarks.forEach((item) => item.classList.remove("is-active-mark"));
-
-  const verseWords = state.words.filter((item) => item.dataset.verseKey === verseKey);
-  verseWords.forEach((item) => item.classList.add("is-active-verse"));
-  mark.classList.add("is-active-mark");
-
-  const anchor = verseWords.find((item) => (item.dataset.interactionKey || "").startsWith(`${verseKey}:`));
-  if (anchor) selectWord(anchor, { keepVerseHighlight: true });
 }
 
 function renderError() {
@@ -461,7 +551,6 @@ async function loadPage(requestedPage) {
   state.page = page;
   state.qcfPage = null;
   state.words = [];
-  state.ayaMarks = [];
   ui.input.value = String(page);
   ui.pageBadge.textContent = asPersianNumber(page);
   ui.loading.hidden = false;
@@ -503,6 +592,7 @@ async function loadPage(requestedPage) {
     setSourceLinks(page, state.sourceOrigins);
 
     const mapping = enrichSvgWords(svg, qcfPage);
+    applyMohashaHighlights();
     installTouchHitAreas(svg);
     ui.loading.hidden = true;
 
@@ -536,6 +626,12 @@ ui.input.addEventListener("keydown", (event) => {
   if (event.key === "Enter") ui.input.blur();
 });
 
+ui.waqfToggle?.addEventListener("click", () => {
+  state.showWaqf = ui.waqfToggle.getAttribute("aria-pressed") !== "true";
+  ui.waqfToggle.setAttribute("aria-pressed", String(state.showWaqf));
+  applyMohashaHighlights();
+});
+
 ui.targetToggle.addEventListener("click", () => {
   const enabled = ui.targetToggle.getAttribute("aria-pressed") !== "true";
   ui.targetToggle.setAttribute("aria-pressed", String(enabled));
@@ -545,15 +641,10 @@ ui.targetToggle.addEventListener("click", () => {
 ui.resetSelection.addEventListener("click", clearSelection);
 
 ui.pageHost.addEventListener("pointerup", (event) => {
-  const mark = event.target.closest?.('g[id^="md-aya-mark"]');
-  if (mark && ui.pageHost.contains(mark)) {
-    selectVerse(mark);
-    return;
-  }
-
   const word = event.target.closest?.('g[id^="md-word-"]');
   if (word && ui.pageHost.contains(word)) selectWord(word);
 });
 
+loadMohashaTable();
 loadWordTranslations();
 loadPage(state.page);
