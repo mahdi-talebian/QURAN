@@ -19,6 +19,7 @@
 - لمس/کلیک روی هر گروه کلمهٔ SVG (`md-word-*`)
 - بزرگ‌تر کردن محدودهٔ لمس برای موبایل با hitbox شفاف
 - نمایش متن عثمانی، املایی، سوره، آیه، خط و شناسهٔ SVG کلمه
+- نشانه‌های وقف و ابتدای مصحف: ۴۴۸۶ نشان در ۲۶۹۰ آیه، با حکم و جای ازسرگیری
 - همگام‌سازی اولیه با `pages/NNN.json` از QCF4
 - پیمایش صفحه و ورود مستقیم شمارهٔ صفحه
 - هایلایت کلمهٔ انتخابی و آیهٔ شامل آن
@@ -70,15 +71,33 @@ mushaf-touch/
 ├── index.html                 # رابط کاربری
 ├── styles.css                 # استایل و حالت لمس/هایلایت
 ├── app.js                     # لودر SVG، تطبیق QCF4 و event delegation
+├── waqf.js                    # منطق خالص وقف و ابتدا (بدون DOM)
 ├── asset-mode.js              # auto در توسعه / local قطعی در build
+├── assets/data/               # waqf-signs.json + قالب overrides
 ├── vendor/                    # باندل فشرده و pinned دو منبع
-├── scripts/                   # extract، build و validation
+├── scripts/                   # extract، build، validation و تست
 ├── Dockerfile                 # deploy مستقل با Nginx
 ├── docker-compose.yml
 ├── nginx.conf
 ├── DEPLOYMENT.md              # راهنمای دقیق deploy
 └── .github/workflows/         # GitHub Pages CI/CD
 ```
+
+## وقف و ابتدا
+
+هر نشانِ وقفِ مصحف در SVG یک گروه `md-word-*` مستقل است که متنش فقط خودِ نشان است؛
+پس با `سوره:آیه + شمارهٔ کلمه` قابل نشانی‌دهی است. `scripts/build-waqf-data.py`
+این نشانه‌ها را از `vendor/` استخراج می‌کند:
+
+```bash
+npm run waqf          # ساخت assets/data/waqf-signs.json
+npm run waqf:check    # اعتبارسنجی فایل گیت‌شده در برابر همان منبع (CI)
+npm test              # تست‌های waqf.js با node --test
+```
+
+احکامِ کتاب‌های وقف و ابتدا (مثل منار الهدی) در فایل اختیاری
+`assets/data/waqf-overrides.json` روی این نشانه‌ها سوار می‌شوند؛ قالب و مبدل CSV در
+[`assets/data/README.md`](./assets/data/README.md) توضیح داده شده است.
 
 ## چرا mapping لازم است؟
 
@@ -114,11 +133,12 @@ mushaf-touch/
 ## گام‌های بعدی پیشنهادی
 
 1. ایجاد فایل `word-map.json` تأییدشده برای تمام صفحات.
-2. افزودن ترجمه و تفسیر با کلید `surah:ayah`.
-3. افزودن صوت و هایلایت زمان‌دار با mapping تأییدشدهٔ کلمات.
-4. ذخیرهٔ بوکمارک، آخرین صفحه و نشان‌گذاری حفظ در IndexedDB.
-5. دانلود آفلاین SVGها با Service Worker.
-6. جایگزین‌کردن قاب CSS نمونه با asset گرافیکی نهاییِ مورد تأیید.
+2. پرکردن `waqf-overrides.json` با احکام تأییدشدهٔ یک کتاب وقف و ابتدا.
+3. افزودن ترجمه و تفسیر با کلید `surah:ayah`.
+4. افزودن صوت و هایلایت زمان‌دار با mapping تأییدشدهٔ کلمات.
+5. ذخیرهٔ بوکمارک، آخرین صفحه و نشان‌گذاری حفظ در IndexedDB.
+6. دانلود آفلاین SVGها با Service Worker.
+7. جایگزین‌کردن قاب CSS نمونه با asset گرافیکی نهاییِ مورد تأیید.
 
 ## حقوق استفاده
 

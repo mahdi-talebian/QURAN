@@ -61,6 +61,15 @@
   --word-active: #b1780e;
   --verse-selected: #2e8c68;
   --touch-target-stroke: rgba(29, 131, 92, .45);
+
+  /* Waqf marks — the SVG has no fill, so CSS owns each kind's colour. */
+  --waqf-lazim: #a73d3d;
+  --waqf-jaiz: #0d7354;
+  --waqf-qila: #2c6d97;
+  --waqf-sali: #96760f;
+  --waqf-muanaqa: #6a45a5;
+  --waqf-hizb: #b57f19;
+  --waqf-sajda: #a2543a;
 }
 
 html[data-theme="dark"] {
@@ -127,6 +136,14 @@ html[data-theme="dark"] {
   --word-active: #f0c356;
   --verse-selected: #b97b3f;
   --touch-target-stroke: rgba(201, 154, 99, .5);
+
+  --waqf-lazim: #e08a8a;
+  --waqf-jaiz: #7fd0a5;
+  --waqf-qila: #8fc4e8;
+  --waqf-sali: #e3c069;
+  --waqf-muanaqa: #c3a6f0;
+  --waqf-hizb: #e3b23c;
+  --waqf-sajda: #e0a184;
 }
 
 * { box-sizing: border-box; }
@@ -576,3 +593,132 @@ h1 { margin: 0; font-size: 19px; }
 }
 .wbw-chip:hover { color: var(--gold); border-color: var(--gold); }
 .wbw-chip.is-active { background: var(--accent); border-color: var(--accent); color: var(--chip-active-ink); font-weight: 700; }
+
+/* --- Waqf & Ibtida (pause marks extracted from the Mushaf SVG) --- */
+.waqf-status { margin: 14px 0 0; color: var(--muted); font-size: 11px; }
+.waqf-status.success { color: var(--status-ink); }
+.waqf-status.warning { color: var(--status-warn-ink); }
+
+.waqf-panel {
+  margin-top: 6px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-inline-start: 3px solid var(--accent);
+  border-radius: 10px;
+  background: var(--soft);
+}
+.waqf-panel[data-waqf-kind="lazim"] { border-inline-start-color: var(--waqf-lazim); }
+.waqf-panel[data-waqf-kind="jaiz"] { border-inline-start-color: var(--waqf-jaiz); }
+.waqf-panel[data-waqf-kind="qila"] { border-inline-start-color: var(--waqf-qila); }
+.waqf-panel[data-waqf-kind="sali"] { border-inline-start-color: var(--waqf-sali); }
+.waqf-panel[data-waqf-kind="muanaqa"] { border-inline-start-color: var(--waqf-muanaqa); }
+.waqf-panel[data-waqf-kind="hizb"] { border-inline-start-color: var(--waqf-hizb); }
+.waqf-panel[data-waqf-kind="sajda"] { border-inline-start-color: var(--waqf-sajda); }
+.waqf-panel .translation-label { margin-top: 0; }
+
+.waqf-head { display: flex; align-items: flex-start; gap: 10px; }
+.waqf-badge {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 20px;
+  line-height: 1;
+}
+.waqf-name { margin: 2px 0 0; color: var(--ink); font-size: 14px; font-weight: 800; }
+.waqf-rule { margin: 3px 0 0; color: var(--muted); font-size: 12px; line-height: 1.9; }
+.waqf-verdict {
+  margin: 9px 0 0;
+  padding: 7px 9px;
+  border-radius: 8px;
+  background: var(--status-bg);
+  color: var(--status-ink);
+  font-size: 12px;
+  line-height: 1.9;
+}
+.waqf-ibtida {
+  margin-top: 9px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--rule);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 2;
+}
+.waqf-ibtida-label {
+  margin-inline-end: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 11px;
+  font-weight: 700;
+}
+.waqf-ibtida-text { color: var(--ink); }
+.waqf-ibtida-note { display: block; color: var(--faint); font-size: 11px; }
+
+.waqf-strip { display: flex; flex-wrap: wrap; gap: 5px; margin: 2px 0 0; }
+.waqf-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px 2px 6px;
+  background: var(--chip-bg);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: color .2s ease, border-color .2s ease;
+}
+.waqf-chip:hover:not(:disabled) { border-color: var(--accent-border); color: var(--accent-strong); }
+.waqf-chip:disabled { cursor: default; opacity: .75; }
+.waqf-chip.is-ibtida { background: var(--accent-soft); border-color: var(--accent-border); color: var(--accent-strong); }
+.waqf-chip-mark { font-size: 15px; line-height: 1; }
+.waqf-chip[data-waqf-kind="lazim"] .waqf-chip-mark { color: var(--waqf-lazim); }
+.waqf-chip[data-waqf-kind="jaiz"] .waqf-chip-mark { color: var(--waqf-jaiz); }
+.waqf-chip[data-waqf-kind="qila"] .waqf-chip-mark { color: var(--waqf-qila); }
+.waqf-chip[data-waqf-kind="sali"] .waqf-chip-mark { color: var(--waqf-sali); }
+.waqf-chip[data-waqf-kind="muanaqa"] .waqf-chip-mark { color: var(--waqf-muanaqa); }
+.waqf-chip[data-waqf-kind="hizb"] .waqf-chip-mark { color: var(--waqf-hizb); }
+.waqf-chip[data-waqf-kind="sajda"] .waqf-chip-mark { color: var(--waqf-sajda); }
+
+.waqf-legend { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--rule); }
+.waqf-legend-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.waqf-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px 2px 6px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--chip-bg);
+  color: var(--ink);
+  font-size: 11px;
+}
+.waqf-legend-item[data-waqf-kind="lazim"] .waqf-chip-mark { color: var(--waqf-lazim); }
+.waqf-legend-item[data-waqf-kind="jaiz"] .waqf-chip-mark { color: var(--waqf-jaiz); }
+.waqf-legend-item[data-waqf-kind="qila"] .waqf-chip-mark { color: var(--waqf-qila); }
+.waqf-legend-item[data-waqf-kind="sali"] .waqf-chip-mark { color: var(--waqf-sali); }
+.waqf-legend-item[data-waqf-kind="muanaqa"] .waqf-chip-mark { color: var(--waqf-muanaqa); }
+.waqf-legend-item[data-waqf-kind="hizb"] .waqf-chip-mark { color: var(--waqf-hizb); }
+.waqf-legend-item[data-waqf-kind="sajda"] .waqf-chip-mark { color: var(--waqf-sajda); }
+.waqf-legend-note { margin: 10px 0 0; color: var(--faint); font-size: 11px; line-height: 2; }
+
+/*
+ * On-page highlight. Selection rules keep winning because they come earlier
+ * with equal specificity, so a selected word never hides behind its own mark.
+ */
+.mushaf-page.show-waqf [data-waqf-kind="lazim"]:not(.is-active-word):not(.is-active-verse) path { fill: var(--waqf-lazim) !important; }
+.mushaf-page.show-waqf [data-waqf-kind="jaiz"]:not(.is-active-word):not(.is-active-verse) path { fill: var(--waqf-jaiz) !important; }
+.mushaf-page.show-waqf [data-waqf-kind="qila"]:not(.is-active-word):not(.is-active-verse) path { fill: var(--waqf-qila) !important; }
+.mushaf-page.show-waqf [data-waqf-kind="sali"]:not(.is-active-word):not(.is-active-verse) path { fill: var(--waqf-sali) !important; }
+.mushaf-page.show-waqf [data-waqf-kind="muanaqa"]:not(.is-active-word):not(.is-active-verse) path { fill: var(--waqf-muanaqa) !important; }
+.mushaf-page.show-waqf [data-waqf-kind="hizb"]:not(.is-active-word):not(.is-active-verse) path { fill: var(--waqf-hizb) !important; }
+.mushaf-page.show-waqf [data-waqf-kind="sajda"]:not(.is-active-word):not(.is-active-verse) path { fill: var(--waqf-sajda) !important; }
+.mushaf-page [id^="md-word-"].is-waqf-mark { cursor: crosshair; }

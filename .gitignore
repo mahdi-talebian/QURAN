@@ -2,6 +2,9 @@
 /assets/mushaf-svg/
 /assets/qcf4/
 
+# Optional book-based rulings (see assets/data/README.md); the example is committed.
+/assets/data/waqf-overrides.json
+
 # Local editor and OS files
 .DS_Store
 .idea/

@@ -11,7 +11,7 @@ rm -rf "$OUTPUT_DIR"
 mkdir -p "$OUTPUT_DIR"
 
 # Copy only browser-facing files; source archives and development docs stay out of deployment.
-cp "$PROJECT_DIR/index.html" "$PROJECT_DIR/app.js" "$PROJECT_DIR/styles.css" "$PROJECT_DIR/asset-mode.js" "$OUTPUT_DIR/"
+cp "$PROJECT_DIR/index.html" "$PROJECT_DIR/app.js" "$PROJECT_DIR/waqf.js" "$PROJECT_DIR/styles.css" "$PROJECT_DIR/asset-mode.js" "$OUTPUT_DIR/"
 cp -R "$PROJECT_DIR/assets" "$OUTPUT_DIR/assets"
 
 "$PROJECT_DIR/scripts/extract-local-assets.sh" "$OUTPUT_DIR/assets"

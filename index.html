@@ -54,6 +54,9 @@
             <button class="subtle-button" id="toggle-targets" type="button" aria-pressed="false">
               محدودهٔ لمس
             </button>
+            <button class="subtle-button" id="toggle-waqf" type="button" aria-pressed="false">
+              نشانه‌های وقف
+            </button>
             <button class="subtle-button" id="reset-selection" type="button" disabled>
               پاک‌کردن انتخاب
             </button>
@@ -81,6 +84,8 @@
           </div>
           <span class="page-badge" id="page-badge">۳۵۱</span>
         </div>
+
+        <p class="waqf-status" id="waqf-status" role="status" hidden></p>
 
         <section class="empty-state" id="empty-state">
           <div class="empty-icon" aria-hidden="true">☝</div>
@@ -120,6 +125,26 @@
           <p class="translation-label">ترجمهٔ واژگان همین آیه</p>
           <div class="verse-wbw" id="verse-wbw" hidden></div>
 
+          <section class="waqf-panel" id="waqf-panel" hidden>
+            <p class="translation-label">وقف و ابتدا</p>
+            <div class="waqf-head">
+              <span class="waqf-badge" id="waqf-badge" aria-hidden="true"></span>
+              <div class="waqf-head-text">
+                <p class="waqf-name" id="waqf-name"></p>
+                <p class="waqf-rule" id="waqf-rule"></p>
+              </div>
+            </div>
+            <p class="waqf-verdict" id="waqf-verdict" hidden></p>
+            <div class="waqf-ibtida" id="waqf-ibtida" hidden>
+              <span class="waqf-ibtida-label">ابتدا</span>
+              <span class="waqf-ibtida-text" id="waqf-ibtida-text" dir="rtl"></span>
+              <span class="waqf-ibtida-note" id="waqf-ibtida-note"></span>
+            </div>
+          </section>
+
+          <p class="translation-label" id="waqf-strip-label" hidden>نشانه‌های وقف همین آیه</p>
+          <div class="waqf-strip" id="waqf-strip" hidden></div>
+
           <div class="data-status" id="qcf-status">
             <span class="status-check">✓</span>
             <span>به دادهٔ QCF4 متصل شد</span>
@@ -132,14 +157,25 @@
             <li><strong>SVG:</strong> نمایش چاپی و hit area هر کلمه</li>
             <li><strong>QCF4:</strong> آیه، کلمه و دادهٔ قابل اتصال</li>
             <li><strong>ترجمه:</strong> فارسی کلمه‌به‌کلمه — QUL ۹۱</li>
+            <li><strong>وقف و ابتدا:</strong> نشانه‌های چاپی مصحف + جای ازسرگیری</li>
             <li><strong>کلید اصلی:</strong> سوره : آیه : کلمه</li>
           </ul>
+        </section>
+
+        <section class="waqf-legend" id="waqf-legend" hidden>
+          <p class="eyebrow">نشانه‌های مصحف مدینه</p>
+          <div class="waqf-legend-grid" id="waqf-legend-grid"></div>
+          <p class="waqf-legend-note">
+            نشانه‌ها از همان SVG مصحف استخراج شده‌اند؛ برای رنگی‌شدنشان روی صفحه، دکمهٔ
+            «نشانه‌های وقف» را بزنید.
+          </p>
         </section>
 
         <section class="source-card">
           <p>منابع صفحهٔ فعلی</p>
           <a id="svg-source" target="_blank" rel="noreferrer">مشاهدهٔ SVG</a>
           <a id="qcf-source" target="_blank" rel="noreferrer">مشاهدهٔ JSON QCF4</a>
+          <a href="./assets/data/waqf-signs.json" target="_blank" rel="noreferrer">دادهٔ نشانه‌های وقف</a>
           <a href="https://qul.tarteel.ai/resources/translation/91" target="_blank" rel="noreferrer">ترجمهٔ فارسی QUL (۹۱)</a>
         </section>
       </aside>

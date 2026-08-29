@@ -8,6 +8,16 @@
  * The SVG keeps the printed Madinah page visually faithful; QCF4 enriches it.
  */
 
+import {
+  annotateWords,
+  buildIndex,
+  describeVerse,
+  ibtidaFor,
+  kindLegend,
+  kindMeta,
+  mergeOverrides,
+} from "./waqf.js";
+
 const VALID_ASSET_MODES = new Set(["local", "remote", "auto"]);
 const requestedAssetMode = window.MUSHAF_ASSET_MODE || "auto";
 const ASSET_MODE = VALID_ASSET_MODES.has(requestedAssetMode) ? requestedAssetMode : "auto";
@@ -44,12 +54,19 @@ const state = {
   selectedKey: null,
   selectedWord: null,
   translations: null,
+  waqfIndex: null,
+  waqfAnnotations: new Map(),
   sourceOrigins: { svg: ASSET_MODE === "remote" ? "remote" : "local", qcf: ASSET_MODE === "remote" ? "remote" : "local" },
   requestNumber: 0,
 };
 
 // QUL resource 91 — Persian word-by-word translation, keyed "surah:ayah:word".
 const WORD_TRANSLATIONS_URL = new URL("./assets/translations/qul-91-persian-wbw.json", import.meta.url).href;
+
+// Waqf/ibtida: printed pause marks generated from the Mushaf SVG, plus an
+// optional override file for book-based rulings (see assets/data/README.md).
+const WAQF_DATA_URL = new URL("./assets/data/waqf-signs.json", import.meta.url).href;
+const WAQF_OVERRIDES_URL = new URL("./assets/data/waqf-overrides.json", import.meta.url).href;
 
 
 const ui = {
@@ -62,6 +79,7 @@ const ui = {
   previous: document.querySelector("#previous-page"),
   next: document.querySelector("#next-page"),
   targetToggle: document.querySelector("#toggle-targets"),
+  waqfToggle: document.querySelector("#toggle-waqf"),
   resetSelection: document.querySelector("#reset-selection"),
   empty: document.querySelector("#empty-state"),
   details: document.querySelector("#word-details"),
@@ -74,6 +92,19 @@ const ui = {
   svgId: document.querySelector("#svg-id"),
   wordTranslation: document.querySelector("#word-translation"),
   verseWbw: document.querySelector("#verse-wbw"),
+  waqfPanel: document.querySelector("#waqf-panel"),
+  waqfBadge: document.querySelector("#waqf-badge"),
+  waqfName: document.querySelector("#waqf-name"),
+  waqfRule: document.querySelector("#waqf-rule"),
+  waqfVerdict: document.querySelector("#waqf-verdict"),
+  waqfIbtida: document.querySelector("#waqf-ibtida"),
+  waqfIbtidaText: document.querySelector("#waqf-ibtida-text"),
+  waqfIbtidaNote: document.querySelector("#waqf-ibtida-note"),
+  waqfStrip: document.querySelector("#waqf-strip"),
+  waqfStripLabel: document.querySelector("#waqf-strip-label"),
+  waqfLegend: document.querySelector("#waqf-legend"),
+  waqfLegendGrid: document.querySelector("#waqf-legend-grid"),
+  waqfStatus: document.querySelector("#waqf-status"),
   qcfStatus: document.querySelector("#qcf-status"),
   svgSource: document.querySelector("#svg-source"),
   qcfSource: document.querySelector("#qcf-source"),
@@ -315,6 +346,9 @@ function clearSelection() {
   state.selectedWord = null;
   state.words.forEach((word) => word.classList.remove("is-active-word", "is-active-verse"));
   state.ayaMarks.forEach((mark) => mark.classList.remove("is-active-mark"));
+  if (ui.waqfPanel) ui.waqfPanel.hidden = true;
+  if (ui.waqfStrip) ui.waqfStrip.hidden = true;
+  if (ui.waqfStripLabel) ui.waqfStripLabel.hidden = true;
   ui.resetSelection.disabled = true;
   ui.details.hidden = true;
   ui.empty.hidden = false;
@@ -362,6 +396,194 @@ function renderVerseTranslations(verseKey, activePosition) {
 }
 
 
+/* --- Waqf & Ibtida: the Mushaf's own pause marks, plus optional rulings --- */
+async function loadWaqfData() {
+  try {
+    const response = await fetch(WAQF_DATA_URL, { cache: "force-cache" });
+    if (!response.ok) throw new Error(`Waqf request failed: ${response.status}`);
+    const dataset = await response.json();
+
+    // The override file is optional: a missing file is a normal condition.
+    let overrides = null;
+    try {
+      const overrideResponse = await fetch(WAQF_OVERRIDES_URL, { cache: "force-cache" });
+      if (overrideResponse.ok) overrides = await overrideResponse.json();
+    } catch (error) {
+      console.warn("Waqf overrides unavailable:", error);
+    }
+
+    state.waqfIndex = mergeOverrides(buildIndex(dataset), overrides);
+    const total = dataset.meta?.marks || 0;
+    setWaqfStatus(
+      "success",
+      overrides
+        ? `${asPersianNumber(total)} نشانٔ وقف + احکامِ ${overrides.meta?.source || "منبع خارجی"}`
+        : `${asPersianNumber(total)} نشانٔ وقف از SVG مصحف خوانده شد`,
+    );
+
+    applyWaqfAnnotations();
+    if (state.selectedWord) selectWord(state.selectedWord, { keepVerseHighlight: true });
+  } catch (error) {
+    state.waqfIndex = null;
+    console.warn("Waqf data unavailable:", error);
+    setWaqfStatus("warning", "دادهٔ وقف در دسترس نیست");
+  }
+}
+
+function setWaqfStatus(kind, message) {
+  if (!ui.waqfStatus) return;
+  ui.waqfStatus.hidden = false;
+  ui.waqfStatus.className = `waqf-status ${kind}`;
+  ui.waqfStatus.textContent = message;
+}
+
+/* Every SVG word group, in reading order, reduced to what waqf.js needs. */
+function waqfRecords() {
+  return state.words.map((word) => ({
+    id: word.id,
+    verseKey: word.dataset.verseKey || verseKeyFromSvgWord(word),
+    wordIndex: toInteger(word.dataset.wordIndexInAyah),
+    hafs: word.dataset.hafs || "",
+    svgWaqf: word.querySelector("[data-waqf]")?.dataset.waqf || "",
+  }));
+}
+
+function applyWaqfAnnotations() {
+  state.waqfAnnotations = annotateWords(waqfRecords(), state.waqfIndex);
+
+  state.words.forEach((word) => {
+    const info = state.waqfAnnotations.get(word.id);
+    if (!info) return;
+
+    word.classList.toggle("is-waqf-mark", info.role === "mark");
+    if (info.kind) word.dataset.waqfKind = info.kind;
+    else delete word.dataset.waqfKind;
+
+    const meta = info.role === "mark" ? kindMeta(info.kind) : null;
+    if (meta) word.setAttribute("aria-label", `${meta.name} — ${word.dataset.verseKey || ""}`);
+  });
+}
+
+function renderWaqf(word) {
+  const info = state.waqfAnnotations.get(word.id);
+  const entry = info?.entry || info?.waqfAfter?.entry || null;
+  const kind = entry?.kind || info?.kind || info?.waqfAfter?.kind || null;
+
+  if (!kind) {
+    ui.waqfPanel.hidden = true;
+    return;
+  }
+
+  const meta = kindMeta(kind);
+  const restart = ibtidaFor(state.waqfIndex, entry);
+  const verdict = entry?.verdict;
+
+  ui.waqfPanel.hidden = false;
+  ui.waqfPanel.dataset.waqfKind = kind;
+  // A book-only ruling has no printed glyph, so fall back to its own label.
+  ui.waqfBadge.textContent = meta?.mark || entry?.mark || verdict?.ar || "؟";
+  ui.waqfName.textContent = meta?.name || verdict?.fa || kind;
+  ui.waqfRule.textContent = meta?.rule || "";
+  ui.waqfRule.hidden = !meta?.rule;
+
+  if (verdict) {
+    ui.waqfVerdict.hidden = false;
+    ui.waqfVerdict.textContent = [
+      verdict.fa || null,
+      verdict.ar ? `(${verdict.ar})` : null,
+      verdict.reason ? `— ${verdict.reason}` : null,
+      verdict.source ? `· ${verdict.source}` : null,
+    ].filter(Boolean).join(" ");
+  } else {
+    ui.waqfVerdict.hidden = true;
+  }
+
+  if (restart && (restart.text || restart.word || restart.note)) {
+    ui.waqfIbtida.hidden = false;
+    ui.waqfIbtidaText.textContent = restart.text
+      ? `${restart.label}: ${restart.text}`
+      : restart.label;
+    ui.waqfIbtidaNote.textContent = restart.note || "";
+  } else {
+    ui.waqfIbtida.hidden = true;
+  }
+}
+
+function renderWaqfStrip(verseKey) {
+  const { marks, ibtida } = describeVerse(state.waqfIndex, verseKey);
+  const chips = [];
+
+  marks.forEach((entry) => {
+    const meta = kindMeta(entry.kind);
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "waqf-chip";
+    chip.dataset.waqfKind = entry.kind;
+
+    const glyph = document.createElement("span");
+    glyph.className = "waqf-chip-mark";
+    glyph.textContent = meta?.mark || entry.mark || "";
+
+    const label = document.createElement("span");
+    label.textContent = `${meta?.name || entry.kind} · جای ${asPersianNumber(entry.word)}`;
+
+    chip.append(glyph, label);
+
+    // A printed mark is clickable: it selects the word it belongs to.
+    if (entry.svg_id) {
+      chip.addEventListener("click", () => {
+        const target = ui.pageHost.querySelector(`#${CSS.escape(entry.svg_id)}`);
+        if (target) selectWord(target);
+      });
+    } else {
+      chip.disabled = true;
+    }
+    chips.push(chip);
+  });
+
+  ibtida.forEach((item) => {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "waqf-chip is-ibtida";
+    chip.textContent = `${item.fa} · کلمهٔ ${asPersianNumber(item.word)}`;
+    if (item.note) chip.title = item.note;
+
+    // The word to resume from may sit on the next page; only link what is here.
+    const selector = `g[id^="md-word-"][data-verse-key="${verseKey}"]`
+      + `[data-word-index-in-ayah="${item.word}"]`;
+    const target = ui.pageHost.querySelector(selector);
+    if (target) chip.addEventListener("click", () => selectWord(target));
+    else chip.disabled = true;
+
+    chips.push(chip);
+  });
+
+  ui.waqfStrip.replaceChildren(...chips);
+  ui.waqfStrip.hidden = chips.length === 0;
+  ui.waqfStripLabel.hidden = chips.length === 0;
+}
+
+function renderWaqfLegend() {
+  const items = kindLegend().map((meta) => {
+    const item = document.createElement("span");
+    item.className = "waqf-legend-item";
+    item.dataset.waqfKind = meta.kind;
+
+    const glyph = document.createElement("span");
+    glyph.className = "waqf-chip-mark";
+    glyph.textContent = meta.mark;
+
+    const name = document.createElement("span");
+    name.textContent = meta.name;
+
+    item.append(glyph, name);
+    return item;
+  });
+
+  ui.waqfLegendGrid.replaceChildren(...items);
+  ui.waqfLegend.hidden = false;
+}
+
 function selectWord(word, { keepVerseHighlight = false } = {}) {
   const interactionKey = word.dataset.interactionKey || word.id;
   const verseKey = word.dataset.verseKey || verseKeyFromSvgWord(word);
@@ -387,6 +609,8 @@ function selectWord(word, { keepVerseHighlight = false } = {}) {
   ui.plainWord.textContent = word.dataset.imlaey || "";
   ui.wordTranslation.textContent = wordTranslation(verseKey, position);
   renderVerseTranslations(verseKey, position);
+  renderWaqf(word);
+  renderWaqfStrip(verseKey);
   ui.verseKey.textContent = `${surah}:${ayah}`;
   ui.lineNumber.textContent = asPersianNumber(toInteger(word.dataset.lineNumber));
   ui.wordPosition.textContent = asPersianNumber(word.dataset.qcfPosition || word.dataset.wordIndexInAyah || "—");
@@ -503,6 +727,7 @@ async function loadPage(requestedPage) {
     setSourceLinks(page, state.sourceOrigins);
 
     const mapping = enrichSvgWords(svg, qcfPage);
+    applyWaqfAnnotations();
     installTouchHitAreas(svg);
     ui.loading.hidden = true;
 
@@ -542,6 +767,12 @@ ui.targetToggle.addEventListener("click", () => {
   ui.pageHost.classList.toggle("show-touch-targets", enabled);
 });
 
+ui.waqfToggle.addEventListener("click", () => {
+  const enabled = ui.waqfToggle.getAttribute("aria-pressed") !== "true";
+  ui.waqfToggle.setAttribute("aria-pressed", String(enabled));
+  ui.pageHost.classList.toggle("show-waqf", enabled);
+});
+
 ui.resetSelection.addEventListener("click", clearSelection);
 
 ui.pageHost.addEventListener("pointerup", (event) => {
@@ -555,5 +786,7 @@ ui.pageHost.addEventListener("pointerup", (event) => {
   if (word && ui.pageHost.contains(word)) selectWord(word);
 });
 
+renderWaqfLegend();
+loadWaqfData();
 loadWordTranslations();
 loadPage(state.page);

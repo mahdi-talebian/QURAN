@@ -9,9 +9,14 @@
     "verify": "python3 scripts/verify-vendored-assets.py",
     "extract-assets": "bash scripts/extract-local-assets.sh",
     "build": "bash scripts/build-static.sh site",
-    "clean-assets": "bash scripts/remove-extracted-assets.sh"
+    "clean-assets": "bash scripts/remove-extracted-assets.sh",
+    "test": "node --test scripts/*.test.mjs",
+    "waqf": "python3 scripts/build-waqf-data.py",
+    "waqf:check": "python3 scripts/build-waqf-data.py --check",
+    "waqf:from-csv": "python3 scripts/convert-waqf-csv.py"
   },
   "engines": {
     "node": ">=20"
-  }
+  },
+  "type": "module"
 }
