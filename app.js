@@ -115,13 +115,21 @@ function decodeEntities(value = "") {
 function normalizeForMatching(value = "") {
   return decodeEntities(value)
     .normalize("NFD")
-    .replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED\u0640\u200C-\u200F]/g, "")
+    .replace(/\u06E5/g, "و")
+    .replace(/\u06E6/g, "و")
+    .replace(/\u06E7/g, "ي")
+    .replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06E4\u06E8-\u06ED\u0640\u200C-\u200F]/g, "")
     .replace(/[ٱأإآ]/g, "ا")
     .replace(/ى/g, "ي")
     .replace(/ؤ/g, "و")
     .replace(/ئ/g, "ي")
+    .replace(/ء/g, "")
     .replace(/ة/g, "ه")
-    .replace(/[^\u0621-\u063A\u0641-\u064A]/g, "");
+    .replace(/ک/g, "ك")
+    .replace(/ی/g, "ي")
+    .replace(/[^\u0621-\u063A\u0641-\u064A]/g, "")
+    .replace(/ي+/g, "ي")
+    .replace(/و+/g, "و");
 }
 
 function isVisualPunctuation(value) {
@@ -340,9 +348,7 @@ function verseLogicalWords(verseKey) {
 }
 
 function foldToken(token = "") {
-  let value = token.replace(/ء/g, "").replace(/ا/g, "");
-  if (value.startsWith("و") && value.length > 2) value = value.slice(1);
-  return value;
+  return token.replace(/[اويء]/g, "");
 }
 
 function tokensClose(a, b) {
@@ -363,6 +369,13 @@ function markPhrase(logical, phrase, className, markLast) {
     target.parts.forEach((part) => part.classList.add(className));
     return;
   }
+  const last = [...wanted].reverse().find((token) => token !== "و" && foldToken(token).length >= 2);
+  if (!last) return;
+  const idx = markLast
+    ? [...texts.keys()].reverse().find((i) => tokensClose(texts[i], last))
+    : texts.findIndex((text) => tokensClose(text, last));
+  if (idx === undefined || idx < 0) return;
+  logical[idx].parts.forEach((part) => part.classList.add(className));
 }
 
 function applyMohashaHighlights() {

@@ -35,15 +35,19 @@ def main() -> int:
         if not line or line.startswith("#"):
             continue
         key, waqf_cell, ibtida_cell = line.split("\t")
-        verse = quran.get(key, "")
+        surah, ayah = key.split(":")
+        neighbors = [quran.get(key, "")]
+        for delta in (-1, 1):
+            neighbors.append(quran.get(f"{surah}:{int(ayah) + delta}", ""))
+        window = " ".join(part for part in neighbors if part)
         waqf, ibtida = [], []
         for phrase in split_phrases(waqf_cell):
-            if verse and phrase_in_verse(phrase, verse):
+            if window and phrase_in_verse(phrase, window):
                 waqf.append(phrase)
             else:
                 dropped.append((key, "waqf", phrase))
         for phrase in split_phrases(ibtida_cell):
-            if verse and phrase_in_verse(phrase, verse):
+            if window and phrase_in_verse(phrase, window):
                 ibtida.append(phrase)
             else:
                 dropped.append((key, "ibtida", phrase))

@@ -26,6 +26,13 @@ class NormTests(unittest.TestCase):
     def test_angels_spelling(self):
         self.assertTrue(phrase_in_verse("الملائكه", self.quran["2:31"]))
 
+    def test_uthmani_variants(self):
+        self.assertTrue(phrase_in_verse("شیئا", self.quran["2:48"]))
+        self.assertTrue(phrase_in_verse("الی ابراهیم", self.quran["2:136"]))
+        self.assertTrue(phrase_in_verse("و قتل داوود", self.quran["2:251"]))
+        self.assertTrue(phrase_in_verse("و یقتلون النبیین", self.quran["3:21"]))
+        self.assertTrue(phrase_in_verse("لاکفرن عنهم سیئاتهم", self.quran["3:195"]))
+
 
 if __name__ == "__main__":
     unittest.main()
