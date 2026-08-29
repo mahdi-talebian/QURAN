@@ -458,6 +458,32 @@ function selectWord(word) {
 
   state.words.forEach((item) => item.classList.remove("is-active-word", "is-same-verse"));
   sameVerse.forEach((item) => item.classList.add("is-same-verse"));
+  sameInteraction.forEach((item) => item.cries(state.translations)
+    .filter(([key, value]) => key.startsWith(prefix) && Number.isInteger(toInteger(key.slice(prefix.length))) && !/^\d+$/.test(value.trim()))
+    .map(([key, value]) => ({ position: toInteger(key.slice(prefix.length)), value }))
+    .sort((a, b) => a.position - b.position)
+    .map(({ position, value }) => {
+      const chip = document.createElement("span");
+      chip.className = "wbw-chip";
+      if (position === activePosition) chip.classList.add("is-active");
+      chip.textContent = value;
+      return chip;
+    });
+
+  ui.verseWbw.replaceChildren(...chips);
+  ui.verseWbw.hidden = chips.length === 0;
+}
+
+
+function selectWord(word) {
+  const interactionKey = word.dataset.interactionKey || word.id;
+  const verseKey = word.dataset.verseKey || verseKeyFromSvgWord(word);
+  const qcfMatched = word.dataset.qcfMatched === "true";
+  const sameInteraction = state.words.filter((item) => item.dataset.interactionKey === interactionKey);
+  const sameVerse = state.words.filter((item) => item.dataset.verseKey === verseKey);
+
+  state.words.forEach((item) => item.classList.remove("is-active-word", "is-same-verse"));
+  sameVerse.forEach((item) => item.classList.add("is-same-verse"));
   sameInteraction.forEach((item) => item.classList.add("is-active-word"));
   state.selectedKey = interactionKey;
 
@@ -600,7 +626,7 @@ ui.input.addEventListener("keydown", (event) => {
   if (event.key === "Enter") ui.input.blur();
 });
 
-ui.waqfToggle.addEventListener("click", () => {
+ui.waqfToggle?.addEventListener("click", () => {
   state.showWaqf = ui.waqfToggle.getAttribute("aria-pressed") !== "true";
   ui.waqfToggle.setAttribute("aria-pressed", String(state.showWaqf));
   applyMohashaHighlights();

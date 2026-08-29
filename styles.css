@@ -217,9 +217,19 @@ button:focus-visible, input:focus-visible, a:focus-visible {
 /* SVG is the authoritative visual layer. These classes only change state. */
 .mushaf-page [id^="md-word-"] { cursor: pointer; }
 .mushaf-page [id^="md-word-"].is-same-verse path { fill: #2e8c68 !important; }
-.mushaf-page [id^="md-word-"].is-waqf path { fill: #c62828 !important; }
-.mushaf-page [id^="md-word-"].is-ibtida path { fill: #1565c0 !important; }
+.mushaf-page [id^="md-word-"].is-waqf path,
+.mushaf-page [id^="md-word-"].is-waqf * {
+  fill: #c62828 !important;
+  stroke: #c62828 !important;
+}
+.mushaf-page [id^="md-word-"].is-ibtida path,
+.mushaf-page [id^="md-word-"].is-ibtida * {
+  fill: #1565c0 !important;
+  stroke: #1565c0 !important;
+}
 .mushaf-page [id^="md-word-"].is-active-word path { fill: #b1780e !important; }
+.mushaf-page .waqf-bar { fill: #c62828; opacity: 0.85; pointer-events: none; }
+.mushaf-page .ibtida-bar { fill: #1565c0; opacity: 0.85; pointer-events: none; }
 .waqf-legend {
   display: inline-flex;
   align-items: center;
