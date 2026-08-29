@@ -6,7 +6,6 @@
     <meta name="theme-color" content="#0c6b4f" />
     <title>مصحف لمسی | SVG عثمانی</title>
     <link rel="stylesheet" href="./styles.css" />
-    <script src="./theme.js"></script>
   </head>
   <body>
     <header class="app-header">
@@ -18,16 +17,9 @@
         </span>
       </a>
 
-      <div class="header-side">
-        <div class="connection-state" id="connection-state" role="status" aria-live="polite">
-          <span class="state-dot"></span>
-          <span>آمادهٔ بارگذاری</span>
-        </div>
-
-        <button class="theme-toggle" id="theme-toggle" type="button" title="تم روشن / تاریک" aria-label="تغییر تم روشن و تاریک">
-          <span class="theme-icon theme-icon-moon" aria-hidden="true">☾</span>
-          <span class="theme-icon theme-icon-sun" aria-hidden="true">☀</span>
-        </button>
+      <div class="connection-state" id="connection-state" role="status" aria-live="polite">
+        <span class="state-dot"></span>
+        <span>آمادهٔ بارگذاری</span>
       </div>
     </header>
 
@@ -41,7 +33,7 @@
 
             <label class="page-input-wrap" for="page-number">
               <span>صفحه</span>
-              <input id="page-number" inputmode="numeric" min="1" max="604" value="351" />
+              <input id="page-number" inputmode="numeric" min="1" max="604" value="2" />
               <span class="page-total">از ۶۰۴</span>
             </label>
 
@@ -51,11 +43,18 @@
           </div>
 
           <div class="toolbar-actions">
+            <span class="waqf-legend" aria-hidden="true">
+              <span><i class="swatch waqf"></i> وقف</span>
+              <span><i class="swatch ibtida"></i> ابتدا</span>
+            </span>
+            <button class="subtle-button" id="toggle-waqf" type="button" aria-pressed="true">
+              وقف و ابتدا
+            </button>
+            <button class="subtle-button" id="toggle-waqf-signs" type="button" aria-pressed="false">
+              نشانه‌های مصحف
+            </button>
             <button class="subtle-button" id="toggle-targets" type="button" aria-pressed="false">
               محدودهٔ لمس
-            </button>
-            <button class="subtle-button" id="toggle-waqf" type="button" aria-pressed="false">
-              نشانه‌های وقف
             </button>
             <button class="subtle-button" id="reset-selection" type="button" disabled>
               پاک‌کردن انتخاب
@@ -72,7 +71,7 @@
         </div>
 
         <p class="reader-note">
-          روی هر کلمه لمس یا کلیک کنید تا فقط همان کلمه انتخاب شود؛ برای انتخاب کل آیه، نشان آیه (۝) را لمس کنید. ظاهر صفحه از SVG و اطلاعات تعاملی از داده‌های QCF4 خوانده می‌شود.
+          روی هر کلمه لمس یا کلیک کنید. ظاهر صفحه از SVG و اطلاعات تعاملی از داده‌های QCF4 خوانده می‌شود.
         </p>
       </section>
 
@@ -85,7 +84,7 @@
           <span class="page-badge" id="page-badge">۳۵۱</span>
         </div>
 
-        <p class="waqf-status" id="waqf-status" role="status" hidden></p>
+        <p class="waqfsign-status" id="waqf-sign-status" role="status" hidden></p>
 
         <section class="empty-state" id="empty-state">
           <div class="empty-icon" aria-hidden="true">☝</div>
@@ -125,30 +124,39 @@
           <p class="translation-label">ترجمهٔ واژگان همین آیه</p>
           <div class="verse-wbw" id="verse-wbw" hidden></div>
 
-          <section class="waqf-panel" id="waqf-panel" hidden>
-            <p class="translation-label">وقف و ابتدا</p>
-            <div class="waqf-head">
-              <span class="waqf-badge" id="waqf-badge" aria-hidden="true"></span>
-              <div class="waqf-head-text">
-                <p class="waqf-name" id="waqf-name"></p>
-                <p class="waqf-rule" id="waqf-rule"></p>
+          <section class="waqfsign-panel" id="waqf-sign-panel" hidden>
+            <p class="translation-label">نشانهٔ وقف مصحف</p>
+            <div class="waqfsign-head">
+              <span class="waqfsign-badge" id="waqf-sign-badge" aria-hidden="true"></span>
+              <div class="waqfsign-head-text">
+                <p class="waqfsign-name" id="waqf-sign-name"></p>
+                <p class="waqfsign-rule" id="waqf-sign-rule"></p>
               </div>
             </div>
-            <p class="waqf-verdict" id="waqf-verdict" hidden></p>
-            <div class="waqf-ibtida" id="waqf-ibtida" hidden>
-              <span class="waqf-ibtida-label">ابتدا</span>
-              <span class="waqf-ibtida-text" id="waqf-ibtida-text" dir="rtl"></span>
-              <span class="waqf-ibtida-note" id="waqf-ibtida-note"></span>
+            <p class="waqfsign-verdict" id="waqf-sign-verdict" hidden></p>
+            <div class="waqfsign-ibtida" id="waqf-sign-ibtida" hidden>
+              <span class="waqfsign-ibtida-label">ابتدا</span>
+              <span class="waqfsign-ibtida-text" id="waqf-sign-ibtida-text" dir="rtl"></span>
+              <span class="waqfsign-ibtida-note" id="waqf-sign-ibtida-note"></span>
             </div>
           </section>
 
-          <p class="translation-label" id="waqf-strip-label" hidden>نشانه‌های وقف همین آیه</p>
-          <div class="waqf-strip" id="waqf-strip" hidden></div>
+          <p class="translation-label" id="waqf-sign-strip-label" hidden>نشانه‌های همین آیه</p>
+          <div class="waqfsign-strip" id="waqf-sign-strip" hidden></div>
 
           <div class="data-status" id="qcf-status">
             <span class="status-check">✓</span>
             <span>به دادهٔ QCF4 متصل شد</span>
           </div>
+        </section>
+
+        <section class="waqfsign-legend" id="waqf-sign-legend" hidden>
+          <p class="eyebrow">نشانه‌های چاپی مصحف مدینه</p>
+          <div class="waqfsign-legend-grid" id="waqf-sign-legend-grid"></div>
+          <p class="waqfsign-legend-note">
+            این نشانه‌ها از همان SVG مصحف استخراج شده‌اند؛ برای رنگی‌شدنشان روی صفحه،
+            دکمهٔ «نشانه‌های مصحف» را بزنید.
+          </p>
         </section>
 
         <section class="architecture-card">
@@ -157,18 +165,10 @@
             <li><strong>SVG:</strong> نمایش چاپی و hit area هر کلمه</li>
             <li><strong>QCF4:</strong> آیه، کلمه و دادهٔ قابل اتصال</li>
             <li><strong>ترجمه:</strong> فارسی کلمه‌به‌کلمه — QUL ۹۱</li>
-            <li><strong>وقف و ابتدا:</strong> نشانه‌های چاپی مصحف + جای ازسرگیری</li>
+            <li><strong>جدول محشی:</strong> وقف و ابتدای پیشنهادی کتاب</li>
+            <li><strong>نشانه‌های مصحف:</strong> ۴۴۸۶ نشان چاپی + جای ازسرگیری</li>
             <li><strong>کلید اصلی:</strong> سوره : آیه : کلمه</li>
           </ul>
-        </section>
-
-        <section class="waqf-legend" id="waqf-legend" hidden>
-          <p class="eyebrow">نشانه‌های مصحف مدینه</p>
-          <div class="waqf-legend-grid" id="waqf-legend-grid"></div>
-          <p class="waqf-legend-note">
-            نشانه‌ها از همان SVG مصحف استخراج شده‌اند؛ برای رنگی‌شدنشان روی صفحه، دکمهٔ
-            «نشانه‌های وقف» را بزنید.
-          </p>
         </section>
 
         <section class="source-card">

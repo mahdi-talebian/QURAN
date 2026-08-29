@@ -7,10 +7,11 @@
     "serve": "python3 -m http.server 4173 --bind 0.0.0.0",
     "serve:local": "bash scripts/start-local.sh",
     "verify": "python3 scripts/verify-vendored-assets.py",
+    "test": "python3 -m unittest discover -s tests -v && node --test scripts/*.test.mjs",
     "extract-assets": "bash scripts/extract-local-assets.sh",
     "build": "bash scripts/build-static.sh site",
     "clean-assets": "bash scripts/remove-extracted-assets.sh",
-    "test": "node --test scripts/*.test.mjs",
+    "test:js": "node --test scripts/*.test.mjs",
     "waqf": "python3 scripts/build-waqf-data.py",
     "waqf:check": "python3 scripts/build-waqf-data.py --check",
     "waqf:from-csv": "python3 scripts/convert-waqf-csv.py"

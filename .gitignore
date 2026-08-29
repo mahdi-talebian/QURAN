@@ -5,7 +5,10 @@
 # Optional book-based rulings (see assets/data/README.md); the example is committed.
 /assets/data/waqf-overrides.json
 
+mohasha.pdf
+
 # Local editor and OS files
 .DS_Store
 .idea/
 .vscode/
+__pycache__/

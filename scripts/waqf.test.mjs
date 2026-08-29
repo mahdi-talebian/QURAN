@@ -273,11 +273,16 @@ test("every element id used by app.js exists in index.html", () => {
   const missing = used.filter((id) => !declared.has(id));
   assert.deepEqual(missing, [], "index.html is missing these ids");
 
-  // The waqf UI in particular is what this change adds.
+  // Both waqf layers must stay wired: the mohasha table and the printed signs.
+  for (const id of ["toggle-waqf"]) {
+    assert.ok(used.includes(id), `app.js no longer wires #${id}`);
+  }
+
   for (const id of [
-    "toggle-waqf", "waqf-panel", "waqf-badge", "waqf-name", "waqf-rule", "waqf-verdict",
-    "waqf-ibtida", "waqf-ibtida-text", "waqf-ibtida-note", "waqf-strip", "waqf-strip-label",
-    "waqf-legend", "waqf-legend-grid", "waqf-status",
+    "toggle-waqf-signs", "waqf-sign-panel", "waqf-sign-badge", "waqf-sign-name",
+    "waqf-sign-rule", "waqf-sign-verdict", "waqf-sign-ibtida", "waqf-sign-ibtida-text",
+    "waqf-sign-ibtida-note", "waqf-sign-strip", "waqf-sign-strip-label",
+    "waqf-sign-legend", "waqf-sign-legend-grid", "waqf-sign-status",
   ]) {
     assert.ok(used.includes(id), `app.js no longer wires #${id}`);
     assert.ok(declared.has(id), `index.html no longer declares #${id}`);
