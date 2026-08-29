@@ -6,9 +6,18 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
+from quran_text import surah_list
 from waqf_norm import phrase_in_verse  # noqa: E402
 
+# The suite was written against a scratch /tmp/quran.json; rebuild the same
+# structure from the vendored QCF4 data when that file is not around.
 QURAN = Path("/tmp/quran.json")
+
+
+def quran_fixture():
+    if QURAN.is_file():
+        return json.loads(QURAN.read_text(encoding="utf-8"))
+    return surah_list()
 DATA = ROOT / "assets" / "mohasha-waqf.json"
 
 
@@ -16,7 +25,7 @@ class MohashaTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.quran = {}
-        for surah in json.loads(QURAN.read_text(encoding="utf-8")):
+        for surah in quran_fixture():
             for ayah in surah["verses"]:
                 cls.quran[f"{surah['id']}:{ayah['id']}"] = ayah["text"]
         cls.table = json.loads(DATA.read_text(encoding="utf-8"))

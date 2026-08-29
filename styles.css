@@ -403,3 +403,145 @@ h1 { margin: 0; font-size: 19px; }
 .verse-wbw { display: flex; flex-wrap: wrap; gap: 5px; margin: 2px 0 0; padding: 9px; border: 1px solid var(--line); border-radius: 10px; background: var(--soft); }
 .wbw-chip { padding: 2px 8px; background: var(--paper); border: 1px solid var(--line); border-radius: 999px; font-size: 12px; color: var(--ink); }
 .wbw-chip.is-active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
+
+/* --- Printed pause marks of the Madinah Mushaf (assets/data/waqf-signs.json) ---
+   Namespaced waqfsign-* so it cannot collide with the mohasha table styles above. */
+:root {
+  --waqfsign-lazim: #a73d3d;
+  --waqfsign-jaiz: #0d7354;
+  --waqfsign-qila: #2c6d97;
+  --waqfsign-sali: #96760f;
+  --waqfsign-muanaqa: #6a45a5;
+  --waqfsign-hizb: #b57f19;
+  --waqfsign-sajda: #a2543a;
+}
+
+.waqfsign-status { margin: 0 0 12px; color: var(--muted); font-size: 11px; }
+.waqfsign-status.success { color: var(--accent-strong); }
+.waqfsign-status.warning { color: var(--gold); }
+
+.waqfsign-panel {
+  margin-top: 6px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-inline-start: 3px solid var(--accent);
+  border-radius: 10px;
+  background: var(--soft);
+}
+.waqfsign-panel[data-waqf-kind="lazim"] { border-inline-start-color: var(--waqfsign-lazim); }
+.waqfsign-panel[data-waqf-kind="jaiz"] { border-inline-start-color: var(--waqfsign-jaiz); }
+.waqfsign-panel[data-waqf-kind="qila"] { border-inline-start-color: var(--waqfsign-qila); }
+.waqfsign-panel[data-waqf-kind="sali"] { border-inline-start-color: var(--waqfsign-sali); }
+.waqfsign-panel[data-waqf-kind="muanaqa"] { border-inline-start-color: var(--waqfsign-muanaqa); }
+.waqfsign-panel[data-waqf-kind="hizb"] { border-inline-start-color: var(--waqfsign-hizb); }
+.waqfsign-panel[data-waqf-kind="sajda"] { border-inline-start-color: var(--waqfsign-sajda); }
+.waqfsign-panel .translation-label { margin-top: 0; }
+
+.waqfsign-head { display: flex; align-items: flex-start; gap: 10px; }
+.waqfsign-badge {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 20px;
+  line-height: 1;
+}
+.waqfsign-name { margin: 2px 0 0; color: var(--ink); font-size: 14px; font-weight: 800; }
+.waqfsign-rule { margin: 3px 0 0; color: var(--muted); font-size: 12px; line-height: 1.9; }
+.waqfsign-verdict {
+  margin: 9px 0 0;
+  padding: 7px 9px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 12px;
+  line-height: 1.9;
+}
+.waqfsign-ibtida {
+  margin-top: 9px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--line);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 2;
+}
+.waqfsign-ibtida-label {
+  margin-inline-end: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 11px;
+  font-weight: 700;
+}
+.waqfsign-ibtida-text { color: var(--ink); }
+.waqfsign-ibtida-note { display: block; font-size: 11px; }
+
+.waqfsign-strip { display: flex; flex-wrap: wrap; gap: 5px; margin: 2px 0 0; }
+.waqfsign-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px 2px 6px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.waqfsign-chip:hover:not(:disabled) { border-color: var(--accent); color: var(--accent-strong); }
+.waqfsign-chip:disabled { cursor: default; opacity: .7; }
+.waqfsign-chip.is-ibtida { background: var(--accent-soft); color: var(--accent-strong); }
+.waqfsign-chip.is-phrase { cursor: default; border-style: dashed; }
+.waqfsign-chip.is-phrase.is-waqf { border-color: #c62828; color: #c62828; }
+.waqfsign-chip.is-phrase.is-ibtida { background: transparent; border-color: #1565c0; color: #1565c0; }
+.waqfsign-glyph { font-size: 15px; line-height: 1; }
+.waqfsign-chip[data-waqf-kind="lazim"] .waqfsign-glyph { color: var(--waqfsign-lazim); }
+.waqfsign-chip[data-waqf-kind="jaiz"] .waqfsign-glyph { color: var(--waqfsign-jaiz); }
+.waqfsign-chip[data-waqf-kind="qila"] .waqfsign-glyph { color: var(--waqfsign-qila); }
+.waqfsign-chip[data-waqf-kind="sali"] .waqfsign-glyph { color: var(--waqfsign-sali); }
+.waqfsign-chip[data-waqf-kind="muanaqa"] .waqfsign-glyph { color: var(--waqfsign-muanaqa); }
+.waqfsign-chip[data-waqf-kind="hizb"] .waqfsign-glyph { color: var(--waqfsign-hizb); }
+.waqfsign-chip[data-waqf-kind="sajda"] .waqfsign-glyph { color: var(--waqfsign-sajda); }
+
+.waqfsign-legend { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--line); }
+.waqfsign-legend-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.waqfsign-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px 2px 6px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 11px;
+}
+.waqfsign-legend-item[data-waqf-kind="lazim"] .waqfsign-glyph { color: var(--waqfsign-lazim); }
+.waqfsign-legend-item[data-waqf-kind="jaiz"] .waqfsign-glyph { color: var(--waqfsign-jaiz); }
+.waqfsign-legend-item[data-waqf-kind="qila"] .waqfsign-glyph { color: var(--waqfsign-qila); }
+.waqfsign-legend-item[data-waqf-kind="sali"] .waqfsign-glyph { color: var(--waqfsign-sali); }
+.waqfsign-legend-item[data-waqf-kind="muanaqa"] .waqfsign-glyph { color: var(--waqfsign-muanaqa); }
+.waqfsign-legend-item[data-waqf-kind="hizb"] .waqfsign-glyph { color: var(--waqfsign-hizb); }
+.waqfsign-legend-item[data-waqf-kind="sajda"] .waqfsign-glyph { color: var(--waqfsign-sajda); }
+.waqfsign-legend-note { margin: 10px 0 0; color: var(--muted); font-size: 11px; line-height: 2; }
+
+/*
+ * On-page tint of the printed signs. A selected word keeps its own colour
+ * because the :not() guard below excludes it.
+ */
+.mushaf-page.show-waqf-signs [data-waqf-kind="lazim"]:not(.is-active-word) path { fill: var(--waqfsign-lazim) !important; }
+.mushaf-page.show-waqf-signs [data-waqf-kind="jaiz"]:not(.is-active-word) path { fill: var(--waqfsign-jaiz) !important; }
+.mushaf-page.show-waqf-signs [data-waqf-kind="qila"]:not(.is-active-word) path { fill: var(--waqfsign-qila) !important; }
+.mushaf-page.show-waqf-signs [data-waqf-kind="sali"]:not(.is-active-word) path { fill: var(--waqfsign-sali) !important; }
+.mushaf-page.show-waqf-signs [data-waqf-kind="muanaqa"]:not(.is-active-word) path { fill: var(--waqfsign-muanaqa) !important; }
+.mushaf-page.show-waqf-signs [data-waqf-kind="hizb"]:not(.is-active-word) path { fill: var(--waqfsign-hizb) !important; }
+.mushaf-page.show-waqf-signs [data-waqf-kind="sajda"]:not(.is-active-word) path { fill: var(--waqfsign-sajda) !important; }
+.mushaf-page [id^="md-word-"].is-waqf-mark { cursor: crosshair; }

@@ -19,6 +19,8 @@
 - لمس/کلیک روی هر گروه کلمهٔ SVG (`md-word-*`)
 - بزرگ‌تر کردن محدودهٔ لمس برای موبایل با hitbox شفاف
 - نمایش متن عثمانی، املایی، سوره، آیه، خط و شناسهٔ SVG کلمه
+- وقف و ابتدای پیشنهادی «مصحف محشی» روی کلمه‌های همان آیه
+- نشانه‌های چاپی وقف مصحف: ۴۴۸۶ نشان در ۲۶۹۰ آیه، با حکم و جای ازسرگیری
 - همگام‌سازی اولیه با `pages/NNN.json` از QCF4
 - پیمایش صفحه و ورود مستقیم شمارهٔ صفحه
 - هایلایت کلمهٔ انتخابی و آیهٔ شامل آن
@@ -70,15 +72,41 @@ mushaf-touch/
 ├── index.html                 # رابط کاربری
 ├── styles.css                 # استایل و حالت لمس/هایلایت
 ├── app.js                     # لودر SVG، تطبیق QCF4 و event delegation
+├── waqf.js                    # منطق خالص نشانه‌های وقف (بدون DOM)
 ├── asset-mode.js              # auto در توسعه / local قطعی در build
+├── جدول_وقف_و_ابتدا.md         # جدول کتاب «صد وقف و ابتدا»
+├── assets/mohasha-waqf.json   # همان جدول به‌صورت داده
+├── assets/data/               # waqf-signs.json + قالب overrides
 ├── vendor/                    # باندل فشرده و pinned دو منبع
-├── scripts/                   # extract، build و validation
+├── scripts/                   # extract، build، validation و تولید داده
+├── tests/                     # تست‌های پایتون
 ├── Dockerfile                 # deploy مستقل با Nginx
 ├── docker-compose.yml
 ├── nginx.conf
 ├── DEPLOYMENT.md              # راهنمای دقیق deploy
 └── .github/workflows/         # GitHub Pages CI/CD
 ```
+
+## وقف و ابتدا — دو لایهٔ مکمل
+
+| لایه | منبع | پرسش | داده |
+|---|---|---|---|
+| جدول محشی | کتاب «صد وقف و ابتدا» | کجا بهتر است بایستم / از کجا از سر بگیرم؟ | `assets/mohasha-waqf.json` (عبارت‌محور، با تطبیق نادقیق روی کلمه‌ها) |
+| نشانه‌های مصحف | خودِ SVG مصحف مدینه | چه نشانی اینجا چاپ شده و معنایش چیست؟ | `assets/data/waqf-signs.json` (جای‌محور، قطعی) |
+
+هر نشانِ وقفِ مصحف در SVG یک گروه `md-word-*` مستقل است که متنش فقط خودِ نشان است؛
+پس با `سوره:آیه + شمارهٔ کلمه` قابل نشانی‌دهی است:
+
+```bash
+npm run waqf          # ساخت assets/data/waqf-signs.json از vendor/
+npm run waqf:check    # اعتبارسنجی فایل گیت‌شده در برابر همان منبع
+npm run test:js       # تست‌های waqf.js با node --test
+npm test              # هر دو مجموعه تست (پایتون + جاوااسکریپت)
+```
+
+احکامِ کتاب‌های دیگر در فایل اختیاری `assets/data/waqf-overrides.json` روی نشانه‌ها
+سوار می‌شوند؛ قالب JSON/CSV و مبدل در
+[`assets/data/README.md`](./assets/data/README.md) توضیح داده شده است.
 
 ## چرا mapping لازم است؟
 

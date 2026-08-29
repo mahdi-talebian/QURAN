@@ -1,17 +1,32 @@
 #!/usr/bin/env python3
 import re
 import sys
+import tarfile
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
 from waqf_norm import _close, _fold, normalize_ar, tokens
 
 SVG = Path("/tmp/svgone/002.svg")
+EXTRACTED = ROOT / "assets" / "mushaf-svg" / "002.svg"
+ARCHIVE = ROOT / "vendor" / "mushafdatabase-svg-v1.01.tar.gz"
 
 
-def svg_verse_words(path: Path, surah: int, ayah: int):
-    text = path.read_text(encoding="utf-8")
+def sample_svg_text() -> str | None:
+    """Page 002, from the scratch copy, the extracted assets or the archive."""
+    for path in (SVG, EXTRACTED):
+        if path.is_file():
+            return path.read_text(encoding="utf-8")
+    if ARCHIVE.is_file():
+        with tarfile.open(ARCHIVE, "r:gz") as archive:
+            handle = archive.extractfile("SVG V1.01/002.svg")
+            return handle.read().decode("utf-8") if handle else None
+    return None
+
+
+def svg_verse_words(text: str, surah: int, ayah: int):
     words = []
     for match in re.finditer(r'<g id="(md-word-\d+)"([^>]*)>', text):
         attrs = match.group(2)
@@ -55,9 +70,10 @@ def mark(logical, phrase, last):
 class SvgHighlightTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        if not SVG.exists():
-            raise unittest.SkipTest("sample SVG not extracted")
-        cls.logical = svg_verse_words(SVG, 2, 4)
+        text = sample_svg_text()
+        if text is None:
+            raise unittest.SkipTest("no SVG source available")
+        cls.logical = svg_verse_words(text, 2, 4)
 
     def test_page2_ayah4_waqf_is_qablika(self):
         self.assertEqual(mark(self.logical, "من قبلک", True), "قبلك")

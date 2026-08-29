@@ -5,16 +5,25 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+from quran_text import surah_list
 from waqf_norm import phrase_in_verse
 
+# The suite was written against a scratch /tmp/quran.json; rebuild the same
+# structure from the vendored QCF4 data when that file is not around.
 QURAN = Path("/tmp/quran.json")
+
+
+def quran_fixture():
+    if QURAN.is_file():
+        return json.loads(QURAN.read_text(encoding="utf-8"))
+    return surah_list()
 
 
 class NormTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.quran = {}
-        for surah in json.loads(QURAN.read_text(encoding="utf-8")):
+        for surah in quran_fixture():
             for ayah in surah["verses"]:
                 cls.quran[f"{surah['id']}:{ayah['id']}"] = ayah["text"]
 

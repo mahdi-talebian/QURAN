@@ -6,15 +6,18 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from quran_text import surah_list  # noqa: E402
 from waqf_norm import phrase_in_verse  # noqa: E402
 
+# Scratch fixture from the original run; rebuilt from the vendored QCF4 pages
+# when it is not present (see scripts/quran_text.py).
 QURAN = Path("/tmp/quran.json")
 TSV = ROOT / "assets" / "mohasha.tsv"
 OUT = ROOT / "assets" / "mohasha-waqf.json"
 
 
 def load_quran():
-    data = json.loads(QURAN.read_text(encoding="utf-8"))
+    data = json.loads(QURAN.read_text(encoding="utf-8")) if QURAN.is_file() else surah_list()
     verses = {}
     for surah in data:
         for ayah in surah["verses"]:
